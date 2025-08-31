@@ -1,0 +1,55 @@
+services:
+  # Backend service (Django)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: grocery-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432/grocery_db
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+    networks:
+      - grocery-network
+
+  # Frontend service (Angular)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: grocery-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - grocery-network
+
+  # Database service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: grocery-db
+    environment:
+      POSTGRES_DB: grocery_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - grocery-network
+
+# Named volumes for persistent data
+volumes:
+  postgres_data:
+
+# Custom network for service communication
+networks:
+  grocery-network:
+    driver: bridge
