@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class TestService {
-  private apiUrl = 'http://localhost:8000/api';
+  private apiUrl = '/api';  // Use relative URL since frontend and backend are on same domain
 
   constructor(private http: HttpClient) { }
 
