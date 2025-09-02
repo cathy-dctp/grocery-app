@@ -14,7 +14,7 @@ from .serializers import (
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = [IsAuthenticated]  # Temporarily disabled for testing
+    permission_classes = [IsAuthenticated]
 
 
 class ItemViewSet(viewsets.ModelViewSet):
