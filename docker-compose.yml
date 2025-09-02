@@ -1,10 +1,10 @@
 services:
-  # Backend service (Django)
-  backend:
+  # Combined app service (Django + Angular via WhiteNoise)
+  app:
     build: 
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: grocery-backend
+    container_name: grocery-app
     ports:
       - "8000:8000"
     environment:
@@ -12,21 +12,6 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/grocery_db
     depends_on:
       - db
-    volumes:
-      - ./backend:/app
-    networks:
-      - grocery-network
-
-  # Frontend service (Angular)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: grocery-frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
     networks:
       - grocery-network
 
