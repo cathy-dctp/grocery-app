@@ -169,9 +169,31 @@ grocery-app/
 **Why these were changed**: To test frontend-backend connection without authentication complexity. **MUST BE REVERTED** before any production deployment.
 
 ## Current Working Setup
-- **Frontend**: `http://localhost` - Angular app in Docker container
-- **Backend**: `http://localhost:8000` - Django API in Docker container  
-- **Database**: `http://localhost:5432` - PostgreSQL in Docker container
-- **Connection**: ✅ Working with test component showing categories
+
+### ✅ **Local Development** (`docker-compose up`)
+- **Single Container**: `http://localhost:8000` - Combined Angular + Django app
+- **Database**: PostgreSQL in separate container
+- **Architecture**: WhiteNoise serves Angular static files from Django
+
+### ✅ **Railway Production** 
+- **URL**: `https://grocery-app-production-bc43.up.railway.app/`
+- **Database**: Railway PostgreSQL (connected via DATABASE_URL)
+- **Architecture**: Same single container as local development
+
+### 🏗️ **Simplified Architecture Benefits**
+- ✅ **Single Dockerfile** works for both local and production
+- ✅ **WhiteNoise** serves Angular files (no nginx needed) 
+- ✅ **Environment-aware API URLs** (localhost vs production)
+- ✅ **Same setup** eliminates dev/prod differences
+
+### 🔧 **Commands**
+```bash
+# Local development
+docker-compose up --build
+
+# Test APIs
+curl http://localhost:8000/api/categories/
+curl http://localhost:8000/  # Angular frontend
+```
 
 Last Updated: September 2025
