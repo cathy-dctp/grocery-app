@@ -129,7 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',  # Temporarily allow unauthenticated access for testing
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -144,6 +144,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Angular dev server
     "http://127.0.0.1:4200",
     "http://localhost:80",    # Frontend container
+    "http://localhost",       # Frontend container (port 80 is implicit)
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all origins for debugging
