@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from .views import CategoryViewSet, ItemViewSet, GroceryListViewSet, GroceryListItemViewSet
@@ -12,4 +12,6 @@ router.register(r'grocery-list-items', GroceryListItemViewSet, basename='grocery
 urlpatterns = [
     path('api/', include(router.urls)),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    # Catch-all for Angular routes
+    re_path(r'^.*/$', TemplateView.as_view(template_name='index.html'), name='angular_routes'),
 ]
