@@ -40,27 +40,28 @@ POST       /api/grocery-list-items/{id}/toggle_checked/
 - **john_doe/password123** (regular user with seed data)
 - **jane_smith/password123** (regular user with seed data)
 
-### Frontend (Angular) - IN PROGRESS
+### Frontend (Angular) - BASIC CONNECTION WORKING ✅
 - ✅ **Project Structure**: Standard Angular 18+ with standalone components
-- 🔄 **API Connection**: Ready to implement test component
-- ❌ **Components**: Not yet created
-- ❌ **Services**: Not yet created
+- ✅ **API Connection**: Test component successfully fetching categories from backend
+- ✅ **Test Components**: TestComponent displaying backend data
+- ✅ **Test Services**: TestService communicating with Django API
+- ❌ **Authentication**: Not yet implemented
+- ❌ **Main Components**: Not yet created
 
 ## Next Steps 🎯
 
-### Immediate (Testing Connection)
-1. **Add HttpClient to Angular config**
-2. **Create simple test service** to fetch categories
-3. **Create test component** to display backend data
-4. **Update main app template** to show test component
-5. **Verify frontend-backend connection**
+### ⚠️ CRITICAL TODO - Re-enable Security
+1. **Re-enable authentication** in Django settings.py and views.py
+2. **Implement Angular authentication service** (login/logout)
+3. **Add user permission checks** back to API endpoints
+4. **Remove temporary security bypass settings**
 
-### After Connection Verified
+### After Authentication Implemented
 1. **Create proper TypeScript interfaces** for API responses
-2. **Build authentication service** (login/logout)
-3. **Create main app components** (categories, items, lists)
-4. **Implement CRUD operations** in Angular
-5. **Add routing and navigation**
+2. **Create main app components** (categories, items, lists)
+3. **Implement CRUD operations** in Angular
+4. **Add routing and navigation**
+5. **Build user-specific features** (my lists, shared lists)
 
 ## Commands Reference
 
@@ -154,4 +155,23 @@ grocery-app/
 - Verify frontend URL in CORS_ALLOWED_ORIGINS
 - Restart Docker containers after settings changes
 
-Last Updated: January 2025
+## ⚠️ TEMPORARY SECURITY SETTINGS - MUST FIX BEFORE PRODUCTION
+
+**Current insecure settings that need to be reverted:**
+
+### Backend Django Settings (`backend/grocery_backend/settings.py`)
+- **Line 132**: `'rest_framework.permissions.AllowAny'` - Should be `'rest_framework.permissions.IsAuthenticated'`
+- **Line 151**: `CORS_ALLOW_ALL_ORIGINS = True` - Should be removed or set to False
+
+### Backend Views (`backend/grocery_list/views.py`)  
+- **Line 17**: `# permission_classes = [IsAuthenticated]` - Should be uncommented and active
+
+**Why these were changed**: To test frontend-backend connection without authentication complexity. **MUST BE REVERTED** before any production deployment.
+
+## Current Working Setup
+- **Frontend**: `http://localhost` - Angular app in Docker container
+- **Backend**: `http://localhost:8000` - Django API in Docker container  
+- **Database**: `http://localhost:5432` - PostgreSQL in Docker container
+- **Connection**: ✅ Working with test component showing categories
+
+Last Updated: September 2025
