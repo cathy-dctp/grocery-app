@@ -59,8 +59,8 @@ class GroceryListItemFactory(factory.django.DjangoModelFactory):
     
     grocery_list = factory.SubFactory(GroceryListFactory)
     item = factory.SubFactory(ItemFactory)
-    quantity = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True, min_value=0.01, max_value=99.99)
-    unit = factory.LazyAttribute(lambda obj: obj.item.default_unit)
+    quantity = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)
+    unit = factory.Faker('random_element', elements=('piece', 'kg', 'lb', 'liter'))
     notes = factory.Faker('text', max_nb_chars=50)
     is_checked = False
     added_by = factory.SubFactory(UserFactory)
