@@ -111,7 +111,7 @@ export class GroceryListDetailComponent implements OnInit {
             return updated;
           } else {
             // Add new item
-            return [...items, newItem];
+            return [newItem, ...items];
           }
         });
         this.cancelAddItem();
