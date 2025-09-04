@@ -1,0 +1,73 @@
+<div class="autocomplete-container">
+  <div class="search-input-container">
+    <input
+      type="text"
+      class="search-input"
+      [formControl]="searchControl"
+      [placeholder]="placeholder"
+      (focus)="onInputFocus()"
+      (blur)="onInputBlur()"
+      (keydown)="onKeyDown($event)"
+      autocomplete="off"
+      role="combobox"
+      [attr.aria-expanded]="showDropdown()"
+      aria-haspopup="listbox"
+    >
+    
+    @if (searchControl.value) {
+      <button 
+        type="button" 
+        class="clear-btn"
+        (click)="clearInput()"
+        aria-label="Clear search"
+      >
+        ×
+      </button>
+    }
+    
+    @if (isLoading()) {
+      <div class="loading-spinner" aria-label="Loading">
+        <div class="spinner"></div>
+      </div>
+    }
+  </div>
+
+  @if (showDropdown()) {
+    <div class="dropdown" role="listbox">
+      @for (item of suggestions(); track $index) {
+        <div 
+          class="suggestion-item"
+          [class.selected]="selectedIndex() === $index"
+          [class.create-new]="item.isCreateNew"
+          (click)="selectItem(item)"
+          role="option"
+          [attr.aria-selected]="selectedIndex() === $index"
+        >
+          @if (item.isCreateNew) {
+            <div class="suggestion-content">
+              <div class="item-name create-new-text">
+                <span class="plus-icon">+</span>
+                {{ item.name }}
+              </div>
+              <div class="item-category">{{ item.category_name }}</div>
+            </div>
+          } @else {
+            <div class="suggestion-content">
+              <div class="item-name">{{ item.name }}</div>
+              <div class="item-details">
+                <span class="item-category">{{ item.category_name }}</span>
+                @if (item.default_unit) {
+                  <span class="item-unit">{{ item.default_unit }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @empty {
+        <div class="no-results">
+          No items found
+        </div>
+      }
+    </div>
+  }
+</div>

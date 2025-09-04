@@ -9,7 +9,7 @@ export interface Item {
   id: number;
   name: string;
   category: number;
-  category_name?: string;
+  category_name: string;
   default_unit: string;
   created_at: string;
   updated_at: string;

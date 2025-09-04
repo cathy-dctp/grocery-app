@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroceryService } from '../../services/grocery.service';
-import { GroceryList, GroceryListItem, Item } from '../../models/api.models';
+import { GroceryList, GroceryListItem, Item, Category } from '../../models/api.models';
+import { ItemAutocompleteComponent, AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
 
 @Component({
   selector: 'app-grocery-list-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ItemAutocompleteComponent],
   templateUrl: './grocery-list-detail.component.html',
   styleUrl: './grocery-list-detail.component.scss'
 })
@@ -16,13 +17,21 @@ export class GroceryListDetailComponent implements OnInit {
   list = signal<GroceryList | null>(null);
   items = signal<GroceryListItem[]>([]);
   availableItems = signal<Item[]>([]);
+  categories = signal<Category[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
   
-  showAddItemForm = false;
-  selectedItemId = 0;
+  selectedItem: AutocompleteItem | null = null;
   itemQuantity = '1';
   itemUnit = '';
+  
+  // New item creation fields
+  isCreatingNewItem = false;
+  newItemName = '';
+  selectedCategoryId = 0;
+  newItemUnit = 'pcs';
+  customCategoryName = '';
+  showCustomCategoryInput = false;
 
   private listId: number = 0;
 
@@ -36,7 +45,7 @@ export class GroceryListDetailComponent implements OnInit {
       this.listId = +params['id'];
       this.loadList();
       this.loadListItems();
-      this.loadAvailableItems();
+      this.loadCategories();
     });
   }
 
@@ -67,15 +76,139 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
 
-  loadAvailableItems() {
-    this.groceryService.getItems().subscribe({
+  loadCategories() {
+    this.groceryService.getCategories().subscribe({
       next: (response) => {
-        this.availableItems.set(response.results);
+        this.categories.set(response.results);
+        // Auto-select first category for new items
+        if (response.results.length > 0) {
+          this.selectedCategoryId = response.results[0].id;
+        }
       },
       error: (err) => {
-        console.error('Error loading available items:', err);
+        console.error('Error loading categories:', err);
       }
     });
+  }
+
+  onItemSelected(item: AutocompleteItem) {
+    this.selectedItem = item;
+    this.itemUnit = item.default_unit || '';
+  }
+
+  onCreateNewItem(itemName: string) {
+    // Switch to new item creation mode
+    this.isCreatingNewItem = true;
+    this.newItemName = itemName;
+    this.selectedItem = null;
+  }
+
+  onCategorySelectionChange() {
+    // Convert string to number for proper comparison
+    this.selectedCategoryId = Number(this.selectedCategoryId);
+    
+    // Show custom category input if "Create new category" is selected
+    this.showCustomCategoryInput = this.selectedCategoryId === -1;
+    if (!this.showCustomCategoryInput) {
+      this.customCategoryName = '';
+    }
+  }
+
+  createNewItemWithCategory() {
+    let categoryId = this.selectedCategoryId;
+    
+    // First create custom category if needed
+    if (this.selectedCategoryId === -1 && this.customCategoryName.trim()) {
+      this.groceryService.createCategory(this.customCategoryName.trim()).subscribe({
+        next: (newCategory) => {
+          categoryId = newCategory.id;
+          // Add to local categories list
+          this.categories.update(cats => [...cats, newCategory]);
+          // Continue with item creation
+          this.proceedWithItemCreation(categoryId);
+        },
+        error: (err) => {
+          console.error('Error creating category:', err);
+          
+          // Better error handling
+          if (err.status === 400 && err.error) {
+            const errorMessages = [];
+            for (const [field, messages] of Object.entries(err.error)) {
+              if (Array.isArray(messages)) {
+                errorMessages.push(...messages);
+              } else if (typeof messages === 'string') {
+                errorMessages.push(messages);
+              }
+            }
+            alert(`Failed to create category:\n${errorMessages.join('\n')}`);
+          } else {
+            alert(`Failed to create new category: ${err.message || 'Unknown error'}`);
+          }
+        }
+      });
+    } else {
+      // Proceed directly with item creation
+      this.proceedWithItemCreation(categoryId);
+    }
+  }
+
+  private proceedWithItemCreation(categoryId: number) {
+    // Validate
+    const errors = this.groceryService.validateNewItem(
+      this.newItemName.trim(), 
+      categoryId, 
+      this.newItemUnit.trim()
+    );
+
+    if (errors.length > 0) {
+      alert('Please fix the following errors:\n' + errors.join('\n'));
+      return;
+    }
+
+    // Create the item
+    this.groceryService.createItem({
+      name: this.newItemName.trim(),
+      category: categoryId,
+      default_unit: this.newItemUnit.trim()
+    }).subscribe({
+      next: (newItem) => {
+        // Select the newly created item
+        this.selectedItem = {
+          id: newItem.id,
+          name: newItem.name,
+          category_name: newItem.category_name,
+          default_unit: newItem.default_unit
+        };
+        this.itemUnit = newItem.default_unit;
+        this.itemQuantity = '1';
+        
+        // Exit new item creation mode
+        this.isCreatingNewItem = false;
+        this.resetNewItemForm();
+      },
+      error: (err) => {
+        console.error('Error creating new item:', err);
+        
+        if (err.status === 400 && err.error) {
+          const errorMessages = [];
+          for (const [field, messages] of Object.entries(err.error)) {
+            if (Array.isArray(messages)) {
+              errorMessages.push(...messages);
+            } else if (typeof messages === 'string') {
+              errorMessages.push(messages);
+            }
+          }
+          alert(`Failed to create item:\n${errorMessages.join('\n')}`);
+        } else {
+          alert('Failed to create new item. Please try again.');
+        }
+      }
+    });
+  }
+
+  cancelNewItemCreation() {
+    this.isCreatingNewItem = false;
+    this.resetNewItemForm();
   }
 
   toggleItemChecked(item: GroceryListItem) {
@@ -93,11 +226,11 @@ export class GroceryListDetailComponent implements OnInit {
   }
 
   addItemToList() {
-    if (!this.selectedItemId) return;
+    if (!this.selectedItem) return;
 
     this.groceryService.addItemToList(
       this.listId, 
-      this.selectedItemId, 
+      this.selectedItem.id, 
       this.itemQuantity, 
       this.itemUnit || undefined
     ).subscribe({
@@ -114,7 +247,7 @@ export class GroceryListDetailComponent implements OnInit {
             return [newItem, ...items];
           }
         });
-        this.cancelAddItem();
+        this.clearForm();
       },
       error: (err) => {
         alert('Failed to add item to list');
@@ -137,24 +270,23 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
 
-  showAddForm() {
-    this.showAddItemForm = true;
-    this.resetAddForm();
-  }
-
-  cancelAddItem() {
-    this.showAddItemForm = false;
-    this.resetAddForm();
-  }
-
-  private resetAddForm() {
-    this.selectedItemId = 0;
+  clearForm() {
+    this.selectedItem = null;
     this.itemQuantity = '1';
     this.itemUnit = '';
+    this.isCreatingNewItem = false;
+    this.resetNewItemForm();
+  }
+
+  private resetNewItemForm() {
+    this.newItemName = '';
+    this.selectedCategoryId = this.categories().length > 0 ? this.categories()[0].id : 0;
+    this.newItemUnit = 'pcs';
+    this.customCategoryName = '';
+    this.showCustomCategoryInput = false;
   }
 
   getSelectedItemUnit(): string {
-    const item = this.availableItems().find(i => i.id === this.selectedItemId);
-    return item?.default_unit || '';
+    return this.selectedItem?.default_unit || '';
   }
 }

@@ -6,36 +6,142 @@
         <h1>{{ list()!.name }}</h1>
         <p class="list-meta">Created {{ list()!.created_at | date }}</p>
       </div>
-      <button class="add-item-btn" (click)="showAddForm()">+ Add Item</button>
     </div>
 
-    @if (showAddItemForm) {
+    <!-- Add Item Form - Always Visible -->
+    <div class="add-item-section">
+      <h2>Add Item to List</h2>
       <div class="add-item-form">
-        <select [(ngModel)]="selectedItemId" class="item-select">
-          <option value="0">Select an item</option>
-          @for (item of availableItems(); track item.id) {
-            <option [value]="item.id">{{ item.name }} ({{ item.category_name }})</option>
+        <div class="form-grid">
+          <div class="autocomplete-section">
+            <label for="item-search">Search or create item:</label>
+            <app-item-autocomplete
+              id="item-search"
+              placeholder="Start typing to search items..."
+              (itemSelected)="onItemSelected($event)"
+              (createNewItem)="onCreateNewItem($event)"
+            ></app-item-autocomplete>
+          </div>
+          
+          @if (isCreatingNewItem) {
+            <!-- New Item Creation Form -->
+            <div class="new-item-section">
+              <h3>Create New Item: "{{ newItemName }}"</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="new-category">Category *</label>
+                  <select 
+                    id="new-category"
+                    [(ngModel)]="selectedCategoryId"
+                    (change)="onCategorySelectionChange()"
+                    class="form-control"
+                  >
+                    <option value="0">Select a category</option>
+                    @for (category of categories(); track category.id) {
+                      <option [value]="category.id">{{ category.name }}</option>
+                    }
+                    <option value="-1">+ Create new category</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="new-unit">Default Unit *</label>
+                  <select 
+                    id="new-unit"
+                    [(ngModel)]="newItemUnit"
+                    class="form-control"
+                  >
+                    <option value="pcs">pieces</option>
+                    <option value="lb">pounds</option>
+                    <option value="kg">kilograms</option>
+                    <option value="bag">bag</option>
+                    <option value="box">box</option>
+                    <option value="bottle">bottle</option>
+                    <option value="can">can</option>
+                    <option value="gallon">gallon</option>
+                    <option value="dozen">dozen</option>
+                    <option value="bunch">bunch</option>
+                    <option value="container">container</option>
+                  </select>
+                </div>
+              </div>
+              
+              @if (showCustomCategoryInput) {
+                <div class="form-group">
+                  <label for="custom-category">New Category Name *</label>
+                  <input 
+                    id="custom-category"
+                    type="text" 
+                    [(ngModel)]="customCategoryName" 
+                    placeholder="Enter category name"
+                    class="form-control"
+                  >
+                </div>
+              }
+              
+              <div class="new-item-actions">
+                <button 
+                  type="button" 
+                  class="create-item-btn"
+                  (click)="createNewItemWithCategory()"
+                  [disabled]="selectedCategoryId === 0 || (selectedCategoryId === -1 && !customCategoryName.trim())"
+                >
+                  Create & Select Item
+                </button>
+                <button type="button" class="cancel-btn" (click)="cancelNewItemCreation()">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          } @else if (selectedItem) {
+            <!-- Selected Item Display -->
+            <div class="selected-item-info">
+              <span class="selected-label">Selected:</span>
+              <strong>{{ selectedItem.name }}</strong>
+              <span class="category-badge">{{ selectedItem.category_name }}</span>
+            </div>
           }
-        </select>
+          
+          @if (selectedItem) {
+            <div class="form-row">
+              <div class="form-group">
+                <label for="quantity">Quantity:</label>
+                <input 
+                  id="quantity"
+                  type="text" 
+                  [(ngModel)]="itemQuantity" 
+                  placeholder="1" 
+                  class="form-control"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="unit">Unit:</label>
+                <input 
+                  id="unit"
+                  type="text" 
+                  [(ngModel)]="itemUnit" 
+                  [placeholder]="getSelectedItemUnit() || 'Unit'"
+                  class="form-control"
+                >
+              </div>
+            </div>
+          }
+        </div>
         
-        <input 
-          type="text" 
-          [(ngModel)]="itemQuantity" 
-          placeholder="Quantity" 
-          class="quantity-input"
-        >
-        
-        <input 
-          type="text" 
-          [(ngModel)]="itemUnit" 
-          [placeholder]="getSelectedItemUnit() || 'Unit'"
-          class="unit-input"
-        >
-        
-        <button (click)="addItemToList()" [disabled]="!selectedItemId">Add</button>
-        <button (click)="cancelAddItem()">Cancel</button>
+        <div class="form-actions">
+          <button 
+            class="add-btn" 
+            (click)="addItemToList()" 
+            [disabled]="!selectedItem"
+          >
+            Add to List
+          </button>
+          <button class="clear-btn" (click)="clearForm()">Clear</button>
+        </div>
       </div>
-    }
+    </div>
 
     @if (loading()) {
       <div class="loading">Loading items...</div>

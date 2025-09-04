@@ -38,8 +38,30 @@ export class GroceryService {
     return this.http.get<PaginatedResponse<Item>>(`${this.apiUrl}/items/`);
   }
 
+  searchItems(query: string): Observable<PaginatedResponse<Item>> {
+    return this.http.get<PaginatedResponse<Item>>(`${this.apiUrl}/items/?search=${encodeURIComponent(query)}`);
+  }
+
   createItem(item: Partial<Item>): Observable<Item> {
     return this.http.post<Item>(`${this.apiUrl}/items/`, item);
+  }
+
+  validateNewItem(name: string, category: number, defaultUnit: string): string[] {
+    const errors: string[] = [];
+    
+    if (!name || name.trim().length === 0) {
+      errors.push('Item name is required');
+    }
+    
+    if (!category || category <= 0) {
+      errors.push('Category is required');
+    }
+    
+    if (!defaultUnit || defaultUnit.trim().length === 0) {
+      errors.push('Default unit is required');
+    }
+    
+    return errors;
   }
 
   updateItem(id: number, item: Partial<Item>): Observable<Item> {
