@@ -47,6 +47,7 @@ class GroceryListSimpleSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     shared_with = UserSerializer(many=True, read_only=True)
     item_count = serializers.SerializerMethodField()
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
     
     class Meta:
         model = GroceryList
