@@ -429,14 +429,14 @@ class TestGroceryListSimpleSerializer:
         owner = UserFactory()
         data = {
             'name': 'New List',
-            'owner': owner.id,
             'is_active': True
         }
         
         serializer = GroceryListSimpleSerializer(data=data)
         assert serializer.is_valid()
         
-        grocery_list = serializer.save()
+        # Since owner is read-only, we need to set it manually
+        grocery_list = serializer.save(owner=owner)
         assert grocery_list.name == 'New List'
         assert grocery_list.owner == owner
         assert grocery_list.is_active is True
@@ -445,13 +445,12 @@ class TestGroceryListSimpleSerializer:
         """Test validation with invalid data."""
         data = {
             'name': '',  # Empty name
-            'owner': 999,  # Non-existent owner
         }
         
         serializer = GroceryListSimpleSerializer(data=data)
         assert not serializer.is_valid()
         assert 'name' in serializer.errors
-        assert 'owner' in serializer.errors
+        # owner field is read-only, so it won't generate validation errors
 
     def test_grocery_list_read_only_fields_not_updated(self, db):
         """Test that read-only fields are not updated during deserialization."""
