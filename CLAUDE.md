@@ -228,10 +228,16 @@ grocery-app/
 - ✅ **Environment-aware API URLs** (localhost vs production)
 - ✅ **Same setup** eliminates dev/prod differences
 
+### **Bug Fixes**
+- **Query Filtering**: Fixed grocery-list-items endpoint filtering by list ID
+- **Decimal Handling**: Fixed quantity arithmetic (Decimal vs float type error)
+- **Shared Users**: Added nested user serialization for shared_with (BE) + Displays shared list users (FE)
+- **Item Count Display**: Fixed item_count vs items_count field mapping
+- **Add Item Logic**: Fixed duplicate item handling (update vs create)
+
 ### 🔧 **Commands**
 ```bash
 # Local development
 docker-compose up --build
 ```
-
 Last Updated: September 2025
