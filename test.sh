@@ -9,6 +9,16 @@
 
 set -e
 
+# Detect docker-compose command (legacy vs plugin)
+if command -v docker-compose >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+else
+    echo "Error: Neither docker-compose nor docker compose plugin found"
+    exit 1
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -68,7 +78,7 @@ done
 # Clean up function
 cleanup_docker() {
     print_status "Cleaning up test containers and volumes..."
-    docker-compose -f docker-compose.test.yml down -v --remove-orphans 2>/dev/null || true
+    $DOCKER_COMPOSE -f docker-compose.test.yml down -v --remove-orphans 2>/dev/null || true
     docker volume rm grocery-app_test_postgres_data 2>/dev/null || true
     print_success "Cleanup completed"
 }
@@ -117,11 +127,11 @@ run_docker_tests() {
     # Build and run tests
     if [[ $WITH_COVERAGE == true ]]; then
         print_status "Running tests with coverage in Docker..."
-        docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+        $DOCKER_COMPOSE -f docker-compose.test.yml up --build --abort-on-container-exit
     else
         print_status "Running tests without coverage in Docker..."
         # Modify the command to exclude coverage
-        docker-compose -f docker-compose.test.yml run --rm test-runner \
+        $DOCKER_COMPOSE -f docker-compose.test.yml run --rm test-runner \
             sh -c "
                 echo 'Waiting for database...' &&
                 python manage.py migrate --run-syncdb &&
