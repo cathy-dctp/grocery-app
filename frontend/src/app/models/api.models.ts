@@ -39,7 +39,7 @@ export interface GroceryListItem {
   grocery_list: number;
   item: number;
   item_name?: string;
-  item_category_name?: string;
+  item_category?: string;
   quantity: string;
   unit: string;
   is_checked: boolean;
