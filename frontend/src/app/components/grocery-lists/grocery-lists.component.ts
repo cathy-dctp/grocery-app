@@ -4,7 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroceryService } from '../../services/grocery.service';
 import { AuthService } from '../../services/auth.service';
-import { GroceryList, AuthUser } from '../../models/api.models';
+import { GroceryList, AuthUser, User } from '../../models/api.models';
 
 @Component({
   selector: 'app-grocery-lists',
@@ -48,6 +48,10 @@ export class GroceryListsComponent implements OnInit {
         console.error('Error loading lists:', err);
       }
     });
+  }
+
+  getSharedWithNames(users: User[]): string {
+    return users.map(user => user.first_name || user.username).join(', ');
   }
 
   createList() {

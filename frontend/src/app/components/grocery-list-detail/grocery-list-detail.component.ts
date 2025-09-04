@@ -102,7 +102,18 @@ export class GroceryListDetailComponent implements OnInit {
       this.itemUnit || undefined
     ).subscribe({
       next: (newItem) => {
-        this.items.update(items => [...items, newItem]);
+        this.items.update(items => {
+          const existingIndex = items.findIndex(item => item.id === newItem.id);
+          if (existingIndex >= 0) {
+            // Update existing item
+            const updated = [...items];
+            updated[existingIndex] = newItem;
+            return updated;
+          } else {
+            // Add new item
+            return [...items, newItem];
+          }
+        });
         this.cancelAddItem();
       },
       error: (err) => {

@@ -4,11 +4,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from django.db import models
+from decimal import Decimal
 from .models import Category, Item, GroceryList, GroceryListItem
 from .serializers import (
     UserSerializer, CategorySerializer, ItemSerializer,
-    GroceryListSerializer, GroceryListSimpleSerializer, GroceryListItemSerializer
+    GroceryListSimpleSerializer, GroceryListItemSerializer
 )
+from django.utils import timezone
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -27,19 +30,14 @@ class ItemViewSet(viewsets.ModelViewSet):
 
 # TODO:  Understand custom actions
 class GroceryListViewSet(viewsets.ModelViewSet):
-    serializer_class = GroceryListSerializer
+    serializer_class = GroceryListSimpleSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         return GroceryList.objects.filter(
             models.Q(owner=user) | models.Q(shared_with=user)
-        ).distinct().prefetch_related('items__item', 'shared_with')
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return GroceryListSimpleSerializer
-        return GroceryListSerializer
+        ).distinct().prefetch_related('shared_with')
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -66,7 +64,7 @@ class GroceryListViewSet(viewsets.ModelViewSet):
             )
             
             if not created:
-                grocery_list_item.quantity += float(quantity)
+                grocery_list_item.quantity += Decimal(quantity)
                 grocery_list_item.save()
 
             serializer = GroceryListItemSerializer(grocery_list_item)
@@ -93,9 +91,18 @@ class GroceryListItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return GroceryListItem.objects.filter(
+        queryset = GroceryListItem.objects.filter(
             models.Q(grocery_list__owner=user) | models.Q(grocery_list__shared_with=user)
         ).distinct().select_related('item', 'grocery_list', 'added_by', 'checked_by')
+        
+        # Filter by grocery_list query parameter if provided
+        grocery_list_id = self.request.query_params.get('grocery_list')
+        print(f"DEBUG: grocery_list query param = {grocery_list_id}")  # Debug line
+        if grocery_list_id:
+            print(f"DEBUG: Filtering by grocery_list = {grocery_list_id}")  # Debug line
+            queryset = queryset.filter(grocery_list=grocery_list_id)
+            
+        return queryset
 
     @action(detail=True, methods=['post'])
     def toggle_checked(self, request, pk=None):
@@ -103,7 +110,6 @@ class GroceryListItemViewSet(viewsets.ModelViewSet):
         item.is_checked = not item.is_checked
         if item.is_checked:
             item.checked_by = request.user
-            from django.utils import timezone
             item.checked_at = timezone.now()
         else:
             item.checked_by = None

@@ -42,34 +42,15 @@ class GroceryListItemSerializer(serializers.ModelSerializer):
                  'checked_by', 'checked_by_username', 'added_by', 'added_by_username',
                  'created_at', 'updated_at']
 
-
-class GroceryListSerializer(serializers.ModelSerializer):
-    owner_username = serializers.CharField(source='owner.username', read_only=True)
-    shared_with_usernames = serializers.SerializerMethodField()
-    items = GroceryListItemSerializer(many=True, read_only=True)
-    item_count = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = GroceryList
-        fields = ['id', 'name', 'owner', 'owner_username', 'shared_with', 
-                 'shared_with_usernames', 'is_active', 'items', 'item_count',
-                 'created_at', 'updated_at']
-    
-    def get_shared_with_usernames(self, obj):
-        return [user.username for user in obj.shared_with.all()]
-    
-    def get_item_count(self, obj):
-        return obj.items.count()
-
-
 # Simplified serializers for list views (without nested data)
 class GroceryListSimpleSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
+    shared_with = UserSerializer(many=True, read_only=True)
     item_count = serializers.SerializerMethodField()
     
     class Meta:
         model = GroceryList
-        fields = ['id', 'name', 'owner', 'owner_username', 'is_active', 
+        fields = ['id', 'name', 'owner', 'owner_username', 'shared_with', 'is_active', 
                  'item_count', 'created_at', 'updated_at']
     
     def get_item_count(self, obj):

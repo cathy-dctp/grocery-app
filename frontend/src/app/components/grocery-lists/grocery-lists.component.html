@@ -2,7 +2,7 @@
   <div class="nav-header">
     <div class="user-info">
       @if (currentUser) {
-        <span>Welcome, {{ currentUser.first_name || currentUser.username }}!</span>
+      <span>Welcome, {{ currentUser.first_name || currentUser.username }}!</span>
       }
     </div>
     <button class="logout-button" (click)="logout()">Logout</button>
@@ -10,61 +10,56 @@
 
   <div class="header">
     <h1>My Grocery Lists</h1>
-    <button class="add-button" (click)="showNewListForm = !showNewListForm">
-      + New List
-    </button>
+    <button class="add-button" (click)="showNewListForm = !showNewListForm">+ New List</button>
   </div>
 
   @if (showNewListForm) {
-    <div class="new-list-form">
-      <input 
-        type="text" 
-        [(ngModel)]="newListName" 
-        placeholder="Enter list name" 
-        class="list-name-input"
-        (keyup.enter)="createList()"
-      >
-      <button (click)="createList()" [disabled]="!newListName.trim()">Create</button>
-      <button (click)="cancelNewList()">Cancel</button>
-    </div>
-  }
-
-  @if (loading()) {
-    <div class="loading">Loading lists...</div>
+  <div class="new-list-form">
+    <input
+      type="text"
+      [(ngModel)]="newListName"
+      placeholder="Enter list name"
+      class="list-name-input"
+      (keyup.enter)="createList()"
+    />
+    <button (click)="createList()" [disabled]="!newListName.trim()">Create</button>
+    <button (click)="cancelNewList()">Cancel</button>
+  </div>
+  } @if (loading()) {
+  <div class="loading">Loading lists...</div>
   } @else if (error()) {
-    <div class="error">{{ error() }}</div>
+  <div class="error">{{ error() }}</div>
   } @else {
-    <div class="lists-grid">
-      @for (list of lists(); track list.id) {
-        <div class="list-card" [routerLink]="['/lists', list.id]">
-          <div class="list-header">
-            <h3>{{ list.name }}</h3>
-            <div class="list-actions">
-              <button 
-                class="delete-btn" 
-                (click)="deleteList(list.id, $event)"
-                title="Delete list"
-              >
-                🗑️
-              </button>
-            </div>
-          </div>
-          <div class="list-meta">
-            <p class="item-count">{{ list.items_count || 0 }} items</p>
-            <p class="created-date">Created {{ formatDate(list.created_at) }}</p>
-          </div>
-          @if (list.shared_with && list.shared_with.length) {
-            <div class="shared-info">
-              <p>Shared with {{ list.shared_with.length }} people</p>
-            </div>
-          }
+  <div class="lists-grid">
+    @for (list of lists(); track list.id) {
+    <div class="list-card" [routerLink]="['/lists', list.id]">
+      <div class="list-header">
+        <h3>{{ list.name }}</h3>
+        <div class="list-actions">
+          <button class="delete-btn" (click)="deleteList(list.id, $event)" title="Delete list">
+            🗑️
+          </button>
         </div>
-      } @empty {
-        <div class="empty-state">
-          <h3>No grocery lists yet</h3>
-          <p>Create your first grocery list to get started!</p>
-        </div>
+      </div>
+      <div class="list-meta">
+        <p class="item-count">{{ list.item_count || 0 }} items</p>
+        <p class="created-date">Created {{ formatDate(list.created_at) }}</p>
+      </div>
+      @if (list.shared_with && list.shared_with.length) {
+      <div class="shared-info">
+        <p>
+          Shared with {{ list.shared_with.length }} people:
+          {{ getSharedWithNames(list.shared_with) }}
+        </p>
+      </div>
       }
     </div>
+    } @empty {
+    <div class="empty-state">
+      <h3>No grocery lists yet</h3>
+      <p>Create your first grocery list to get started!</p>
+    </div>
+    }
+  </div>
   }
 </div>

@@ -31,7 +31,7 @@ export interface GroceryList {
   shared_with: User[];
   created_at: string;
   updated_at: string;
-  items_count?: number;
+  item_count?: number;
 }
 
 export interface GroceryListItem {
