@@ -1,0 +1,26 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Docker Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build and run tests
+      run: |
+        chmod +x test.sh
+        ./test.sh --docker --coverage
+
+    - name: Clean up
+      if: always()
+      run: |
+        ./test.sh --clean
