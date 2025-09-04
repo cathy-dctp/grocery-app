@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  test-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: grocery_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  test-runner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@test-db:5432/grocery_test
+      - DJANGO_SETTINGS_MODULE=grocery_backend.settings
+    depends_on:
+      test-db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        python manage.py migrate --run-syncdb &&
+        echo 'Running tests...' &&
+        python -m pytest --tb=short --disable-warnings -v --cov=grocery_list --cov-report=html --cov-report=term
+      "
+
+volumes:
+  test_postgres_data:
