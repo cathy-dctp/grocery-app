@@ -4,12 +4,14 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroceryService } from '../../services/grocery.service';
 import { GroceryList, GroceryListItem, Item, Category } from '../../models/api.models';
-import { ItemAutocompleteComponent, AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
+import { GroceryListItemComponent } from '../grocery-list-item/grocery-list-item.component';
+import { ItemFormComponent, ItemFormData } from '../item-form/item-form.component';
+import { AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
 
 @Component({
   selector: 'app-grocery-list-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ItemAutocompleteComponent],
+  imports: [CommonModule, RouterModule, FormsModule, GroceryListItemComponent, ItemFormComponent],
   templateUrl: './grocery-list-detail.component.html',
   styleUrl: './grocery-list-detail.component.scss'
 })
@@ -21,17 +23,8 @@ export class GroceryListDetailComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   
-  selectedItem: AutocompleteItem | null = null;
-  itemQuantity = '1';
-  itemUnit = '';
-  
-  // New item creation fields
-  isCreatingNewItem = false;
-  newItemName = '';
-  selectedCategoryId = 0;
-  newItemUnit = 'pcs';
-  customCategoryName = '';
-  showCustomCategoryInput = false;
+  // Form handling
+  isProcessing = signal(false);
 
   private listId: number = 0;
 
@@ -80,10 +73,6 @@ export class GroceryListDetailComponent implements OnInit {
     this.groceryService.getCategories().subscribe({
       next: (response) => {
         this.categories.set(response.results);
-        // Auto-select first category for new items
-        if (response.results.length > 0) {
-          this.selectedCategoryId = response.results[0].id;
-        }
       },
       error: (err) => {
         console.error('Error loading categories:', err);
@@ -91,127 +80,97 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
 
-  onItemSelected(item: AutocompleteItem) {
-    this.selectedItem = item;
-    this.itemUnit = item.default_unit || '';
-  }
-
-  onCreateNewItem(itemName: string) {
-    // Switch to new item creation mode
-    this.isCreatingNewItem = true;
-    this.newItemName = itemName;
-    this.selectedItem = null;
-  }
-
-  onCategorySelectionChange() {
-    // Convert string to number for proper comparison
-    this.selectedCategoryId = Number(this.selectedCategoryId);
+  onItemFormSubmit(formData: ItemFormData) {
+    this.isProcessing.set(true);
     
-    // Show custom category input if "Create new category" is selected
-    this.showCustomCategoryInput = this.selectedCategoryId === -1;
-    if (!this.showCustomCategoryInput) {
-      this.customCategoryName = '';
+    if (formData.newItem) {
+      // Create new item first, then add to list
+      this.createNewItemAndAdd(formData.newItem, formData.quantity, formData.unit);
+    } else if (formData.selectedItem) {
+      // Add existing item to list
+      this.addExistingItemToList(formData.selectedItem, formData.quantity, formData.unit);
     }
   }
-
-  createNewItemWithCategory() {
-    let categoryId = this.selectedCategoryId;
-    
-    // First create custom category if needed
-    if (this.selectedCategoryId === -1 && this.customCategoryName.trim()) {
-      this.groceryService.createCategory(this.customCategoryName.trim()).subscribe({
-        next: (newCategory) => {
-          categoryId = newCategory.id;
-          // Add to local categories list
-          this.categories.update(cats => [...cats, newCategory]);
-          // Continue with item creation
-          this.proceedWithItemCreation(categoryId);
-        },
-        error: (err) => {
-          console.error('Error creating category:', err);
-          
-          // Better error handling
-          if (err.status === 400 && err.error) {
-            const errorMessages = [];
-            for (const [field, messages] of Object.entries(err.error)) {
-              if (Array.isArray(messages)) {
-                errorMessages.push(...messages);
-              } else if (typeof messages === 'string') {
-                errorMessages.push(messages);
-              }
-            }
-            alert(`Failed to create category:\n${errorMessages.join('\n')}`);
-          } else {
-            alert(`Failed to create new category: ${err.message || 'Unknown error'}`);
-          }
-        }
-      });
-    } else {
-      // Proceed directly with item creation
-      this.proceedWithItemCreation(categoryId);
-    }
-  }
-
-  private proceedWithItemCreation(categoryId: number) {
-    // Validate
-    const errors = this.groceryService.validateNewItem(
-      this.newItemName.trim(), 
-      categoryId, 
-      this.newItemUnit.trim()
-    );
-
-    if (errors.length > 0) {
-      alert('Please fix the following errors:\n' + errors.join('\n'));
-      return;
-    }
-
-    // Create the item
+  
+  private createNewItemAndAdd(newItem: { name: string; categoryId: number; unit: string }, quantity: string, unit: string) {
     this.groceryService.createItem({
-      name: this.newItemName.trim(),
-      category: categoryId,
-      default_unit: this.newItemUnit.trim()
+      name: newItem.name,
+      category: newItem.categoryId,
+      default_unit: newItem.unit
     }).subscribe({
-      next: (newItem) => {
-        // Select the newly created item
-        this.selectedItem = {
-          id: newItem.id,
-          name: newItem.name,
-          category_name: newItem.category_name,
-          default_unit: newItem.default_unit
-        };
-        this.itemUnit = newItem.default_unit;
-        this.itemQuantity = '1';
-        
-        // Exit new item creation mode
-        this.isCreatingNewItem = false;
-        this.resetNewItemForm();
+      next: (createdItem) => {
+        // Now add the created item to the list
+        this.groceryService.addItemToList(
+          this.listId,
+          createdItem.id,
+          quantity,
+          unit || createdItem.default_unit
+        ).subscribe({
+          next: (listItem) => {
+            this.items.update(items => {
+              const existingIndex = items.findIndex(item => item.id === listItem.id);
+              if (existingIndex >= 0) {
+                const updated = [...items];
+                updated[existingIndex] = listItem;
+                return updated;
+              } else {
+                return [listItem, ...items];
+              }
+            });
+            this.isProcessing.set(false);
+          },
+          error: (err) => {
+            this.handleError('Failed to add item to list', err);
+            this.isProcessing.set(false);
+          }
+        });
       },
       error: (err) => {
-        console.error('Error creating new item:', err);
-        
-        if (err.status === 400 && err.error) {
-          const errorMessages = [];
-          for (const [field, messages] of Object.entries(err.error)) {
-            if (Array.isArray(messages)) {
-              errorMessages.push(...messages);
-            } else if (typeof messages === 'string') {
-              errorMessages.push(messages);
-            }
+        this.handleError('Failed to create new item', err);
+        this.isProcessing.set(false);
+      }
+    });
+  }
+  
+  private addExistingItemToList(item: AutocompleteItem, quantity: string, unit: string) {
+    this.groceryService.addItemToList(
+      this.listId,
+      item.id,
+      quantity,
+      unit || item.default_unit
+    ).subscribe({
+      next: (listItem) => {
+        this.items.update(items => {
+          const existingIndex = items.findIndex(item => item.id === listItem.id);
+          if (existingIndex >= 0) {
+            const updated = [...items];
+            updated[existingIndex] = listItem;
+            return updated;
+          } else {
+            return [listItem, ...items];
           }
-          alert(`Failed to create item:\n${errorMessages.join('\n')}`);
-        } else {
-          alert('Failed to create new item. Please try again.');
-        }
+        });
+        this.isProcessing.set(false);
+      },
+      error: (err) => {
+        this.handleError('Failed to add item to list', err);
+        this.isProcessing.set(false);
+      }
+    });
+  }
+  
+  onCreateNewCategory(categoryName: string) {
+    this.groceryService.createCategory(categoryName).subscribe({
+      next: (newCategory) => {
+        this.categories.update(cats => [...cats, newCategory]);
+      },
+      error: (err) => {
+        this.handleError('Failed to create category', err);
       }
     });
   }
 
-  cancelNewItemCreation() {
-    this.isCreatingNewItem = false;
-    this.resetNewItemForm();
-  }
-
-  toggleItemChecked(item: GroceryListItem) {
+  onToggleItemChecked(item: GroceryListItem) {
     this.groceryService.toggleItemChecked(item.id).subscribe({
       next: (updatedItem) => {
         this.items.update(items => 
@@ -219,44 +178,26 @@ export class GroceryListDetailComponent implements OnInit {
         );
       },
       error: (err) => {
-        alert('Failed to update item');
-        console.error('Error toggling item:', err);
+        this.handleError('Failed to update item', err);
       }
     });
   }
-
-  addItemToList() {
-    if (!this.selectedItem) return;
-
-    this.groceryService.addItemToList(
-      this.listId, 
-      this.selectedItem.id, 
-      this.itemQuantity, 
-      this.itemUnit || undefined
-    ).subscribe({
-      next: (newItem) => {
-        this.items.update(items => {
-          const existingIndex = items.findIndex(item => item.id === newItem.id);
-          if (existingIndex >= 0) {
-            // Update existing item
-            const updated = [...items];
-            updated[existingIndex] = newItem;
-            return updated;
-          } else {
-            // Add new item
-            return [newItem, ...items];
-          }
-        });
-        this.clearForm();
+  
+  onUpdateItem(data: { id: number; updates: Partial<GroceryListItem> }) {
+    this.groceryService.updateGroceryListItem(data.id, data.updates).subscribe({
+      next: (updatedItem) => {
+        this.items.update(items => 
+          items.map(i => i.id === data.id ? updatedItem : i)
+        );
       },
       error: (err) => {
-        alert('Failed to add item to list');
-        console.error('Error adding item:', err);
+        this.handleError('Failed to update item', err);
       }
     });
   }
 
-  removeItemFromList(itemId: number) {
+
+  onDeleteItem(itemId: number) {
     if (!confirm('Remove this item from the list?')) return;
 
     this.groceryService.deleteGroceryListItem(itemId).subscribe({
@@ -264,29 +205,26 @@ export class GroceryListDetailComponent implements OnInit {
         this.items.update(items => items.filter(item => item.id !== itemId));
       },
       error: (err) => {
-        alert('Failed to remove item');
-        console.error('Error removing item:', err);
+        this.handleError('Failed to remove item', err);
       }
     });
   }
 
-  clearForm() {
-    this.selectedItem = null;
-    this.itemQuantity = '1';
-    this.itemUnit = '';
-    this.isCreatingNewItem = false;
-    this.resetNewItemForm();
-  }
-
-  private resetNewItemForm() {
-    this.newItemName = '';
-    this.selectedCategoryId = this.categories().length > 0 ? this.categories()[0].id : 0;
-    this.newItemUnit = 'pcs';
-    this.customCategoryName = '';
-    this.showCustomCategoryInput = false;
-  }
-
-  getSelectedItemUnit(): string {
-    return this.selectedItem?.default_unit || '';
+  private handleError(message: string, error: any) {
+    console.error(message + ':', error);
+    
+    if (error.status === 400 && error.error) {
+      const errorMessages = [];
+      for (const [field, messages] of Object.entries(error.error)) {
+        if (Array.isArray(messages)) {
+          errorMessages.push(...messages);
+        } else if (typeof messages === 'string') {
+          errorMessages.push(messages);
+        }
+      }
+      alert(`${message}:\n${errorMessages.join('\n')}`);
+    } else {
+      alert(`${message}. Please try again.`);
+    }
   }
 }
