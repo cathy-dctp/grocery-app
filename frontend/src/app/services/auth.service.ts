@@ -29,10 +29,16 @@ export class AuthService {
     const token = localStorage.getItem('authToken');
     
     if (userStr && token) {
-      const user: AuthUser = JSON.parse(userStr);
-      user.token = token;
-      this.currentUserSubject.next(user);
-      this.isAuthenticated.set(true);
+      try {
+        const user: AuthUser = JSON.parse(userStr);
+        user.token = token;
+        this.currentUserSubject.next(user);
+        this.isAuthenticated.set(true);
+      } catch (error) {
+        // If localStorage data is corrupted, clear it
+        console.warn('Corrupted user data in localStorage, clearing...', error);
+        this.clearUserData();
+      }
     }
   }
 
