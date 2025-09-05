@@ -30,7 +30,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Production safety checks
         self.perform_safety_checks(options)
-        
+
         with transaction.atomic():
             if options["clean"]:
                 self.clean_demo_data(options)
@@ -71,23 +71,24 @@ class Command(BaseCommand):
     def perform_safety_checks(self, options):
         """Perform safety checks to protect production data"""
         import os
+
         from django.conf import settings
-        
+
         # Check if we're in a production-like environment
         is_production = (
-            not settings.DEBUG or
-            os.environ.get('DJANGO_ENV') == 'production' or
-            os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or
-            'production' in os.environ.get('DATABASE_URL', '').lower()
+            not settings.DEBUG
+            or os.environ.get("DJANGO_ENV") == "production"
+            or os.environ.get("RAILWAY_ENVIRONMENT_NAME") == "production"
+            or "production" in os.environ.get("DATABASE_URL", "").lower()
         )
-        
-        if is_production and not options.get('force_production'):
+
+        if is_production and not options.get("force_production"):
             # Extra safety checks for production
             non_demo_users_exist = User.objects.exclude(
-                username__in=['john_doe', 'jane_smith']
+                username__in=["john_doe", "jane_smith"]
             ).exists()
-            
-            if non_demo_users_exist and options.get('clean'):
+
+            if non_demo_users_exist and options.get("clean"):
                 self.stdout.write(
                     self.style.ERROR(
                         "⚠️  PRODUCTION SAFETY CHECK FAILED:\n"
@@ -101,16 +102,18 @@ class Command(BaseCommand):
                     )
                 )
                 exit(1)
-            
-            if options.get('production_safe'):
+
+            if options.get("production_safe"):
                 # In production-safe mode, verify demo users only
                 self.verify_demo_user_isolation()
-        
+
         # General safety warning for clean operations
-        if options.get('clean'):
+        if options.get("clean"):
             total_users = User.objects.count()
-            demo_users = User.objects.filter(username__in=['john_doe', 'jane_smith']).count()
-            
+            demo_users = User.objects.filter(
+                username__in=["john_doe", "jane_smith"]
+            ).count()
+
             self.stdout.write(
                 self.style.WARNING(
                     f"🔒 SAFETY CHECK:\n"
@@ -123,17 +126,15 @@ class Command(BaseCommand):
 
     def verify_demo_user_isolation(self):
         """Verify that demo data is properly isolated"""
-        demo_users = User.objects.filter(username__in=['john_doe', 'jane_smith'])
-        
+        demo_users = User.objects.filter(username__in=["john_doe", "jane_smith"])
+
         # Check for shared lists that involve non-demo users
-        shared_lists_with_non_demo = GroceryList.objects.filter(
-            owner__in=demo_users
-        ).filter(
-            shared_with__isnull=False
-        ).exclude(
-            shared_with__username__in=['john_doe', 'jane_smith']
+        shared_lists_with_non_demo = (
+            GroceryList.objects.filter(owner__in=demo_users)
+            .filter(shared_with__isnull=False)
+            .exclude(shared_with__username__in=["john_doe", "jane_smith"])
         )
-        
+
         if shared_lists_with_non_demo.exists():
             self.stdout.write(
                 self.style.ERROR(
@@ -152,32 +153,37 @@ class Command(BaseCommand):
         # Define demo users explicitly
         demo_usernames = ["john_doe", "jane_smith"]
         demo_user_objects = User.objects.filter(username__in=demo_usernames)
-        
+
         if not demo_user_objects.exists():
             self.stdout.write("   No demo users found, skipping cleanup")
             return
 
         # Double-check we're only affecting demo users
-        demo_user_ids = list(demo_user_objects.values_list('id', flat=True))
-        self.stdout.write(f"   🎯 Targeting demo users: {', '.join(demo_usernames)} (IDs: {demo_user_ids})")
+        demo_user_ids = list(demo_user_objects.values_list("id", flat=True))
+        self.stdout.write(
+            f"   🎯 Targeting demo users: {', '.join(demo_usernames)} "
+            f"(IDs: {demo_user_ids})"
+        )
 
         # Phase 1: Clean grocery list items (respecting foreign key constraints)
         demo_list_items = GroceryListItem.objects.filter(
             grocery_list__owner__in=demo_user_objects
         )
-        items_count = demo_list_items.count()
-        
+
         # Additional safety: verify no shared items with non-demo users
         shared_items_with_real_users = demo_list_items.filter(
             grocery_list__shared_with__isnull=False
-        ).exclude(
-            grocery_list__shared_with__in=demo_user_objects
-        )
-        
-        if shared_items_with_real_users.exists() and options and not options.get('force_production'):
+        ).exclude(grocery_list__shared_with__in=demo_user_objects)
+
+        if (
+            shared_items_with_real_users.exists()
+            and options
+            and not options.get("force_production")
+        ):
             self.stdout.write(
                 self.style.ERROR(
-                    "⚠️  SAFETY ABORT: Found shared lists between demo and real users.\n"
+                    "⚠️  SAFETY ABORT: Found shared lists between demo and "
+                    "real users.\n"
                     "   Cannot safely clean without affecting real users.\n"
                     "   Use --force-production to override (not recommended)."
                 )
@@ -186,29 +192,41 @@ class Command(BaseCommand):
 
         deleted_items = demo_list_items.delete()[0]
         if deleted_items:
-            self.stdout.write(f"   ✅ Deleted {deleted_items} grocery list items (demo users only)")
+            self.stdout.write(
+                f"   ✅ Deleted {deleted_items} grocery list items (demo users only)"
+            )
 
         # Phase 2: Clean grocery lists (owned by demo users only)
         demo_lists = GroceryList.objects.filter(owner__in=demo_user_objects)
         deleted_lists = demo_lists.delete()[0]
         if deleted_lists:
-            self.stdout.write(f"   ✅ Deleted {deleted_lists} grocery lists (demo users only)")
+            self.stdout.write(
+                f"   ✅ Deleted {deleted_lists} grocery lists (demo users only)"
+            )
 
         # Phase 3: Clean orphaned items (only if they're not referenced elsewhere)
         # This is safer as it only removes truly unused items
-        orphaned_items = Item.objects.filter(
-            grocerylistitem__isnull=True
-        ).exclude(
+        orphaned_items = Item.objects.filter(grocerylistitem__isnull=True).exclude(
             # Keep items that might be referenced by non-demo users
             name__in=[
-                'Whole Milk', 'Bread', 'Eggs', 'Bananas', 'Chicken', 
-                'Rice', 'Pasta', 'Coffee', 'Water', 'Apples'
-            ] # Keep common items that real users might reference
+                "Whole Milk",
+                "Bread",
+                "Eggs",
+                "Bananas",
+                "Chicken",
+                "Rice",
+                "Pasta",
+                "Coffee",
+                "Water",
+                "Apples",
+            ]  # Keep common items that real users might reference
         )
-        
+
         deleted_catalog_items = orphaned_items.delete()[0]
         if deleted_catalog_items:
-            self.stdout.write(f"   ✅ Deleted {deleted_catalog_items} orphaned catalog items")
+            self.stdout.write(
+                f"   ✅ Deleted {deleted_catalog_items} orphaned catalog items"
+            )
 
         # Phase 4: Clean orphaned categories (only if no items reference them)
         orphaned_categories = Category.objects.filter(items__isnull=True)
@@ -223,9 +241,11 @@ class Command(BaseCommand):
             user.set_password("password123")
             user.email = f"{user.username}@example.com"
             user.save()
-        
-        self.stdout.write(f"   ✅ Reset {demo_user_objects.count()} demo user credentials")
-        
+
+        self.stdout.write(
+            f"   ✅ Reset {demo_user_objects.count()} demo user credentials"
+        )
+
         self.stdout.write(
             self.style.SUCCESS(
                 "✅ Demo data cleanup completed safely\n"
@@ -586,9 +606,7 @@ class Command(BaseCommand):
         )
 
         # 4. Healthy Living List (Jane) - Health focused
-        healthy_list = GroceryList.objects.create(
-            name="💪 Healthy Living", owner=jane
-        )
+        healthy_list = GroceryList.objects.create(name="💪 Healthy Living", owner=jane)
 
         healthy_items = [
             ("Quinoa", "2", "bag"),
