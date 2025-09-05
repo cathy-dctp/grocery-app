@@ -4,6 +4,7 @@ module.exports = [
       'dist/',
       'node_modules/',
       'coverage/',
+      'cypress/',
       '**/*.js',
       '**/*.d.ts'
     ]
