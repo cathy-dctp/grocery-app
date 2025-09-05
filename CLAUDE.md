@@ -26,6 +26,12 @@ A full-stack grocery list management application built with:
 - ✅ **Responsive Design**: Mobile-friendly UI with SCSS styling
 - ✅ **TypeScript**: Proper interfaces and type safety
 
+### Code Quality & Linting - COMPLETED ✅
+- ✅ **Backend Linting**: Black (formatter), Flake8 (linter), isort (import sorting)
+- ✅ **Frontend Linting**: ESLint with Angular rules, Enhanced Prettier configuration
+- ✅ **CI/CD Integration**: GitHub Actions runs linting checks before tests
+- ✅ **Development Tools**: Makefile targets, VS Code settings for auto-formatting
+
 ### API Endpoints Available
 ```
 # Authentication
@@ -95,6 +101,28 @@ docker-compose down && docker-compose up --build
 ```bash
 # Development server
 cd frontend && npm start
+```
+
+### Code Linting & Formatting
+```bash
+# Backend linting and formatting
+make lint-backend          # Check backend code (Black, Flake8, isort)
+make format-backend        # Auto-format backend code (Black, isort)
+
+# Frontend linting and formatting
+make lint-frontend         # Check frontend code (ESLint, Prettier)  
+make format-frontend       # Auto-format frontend code (ESLint, Prettier)
+
+# Combined commands
+make lint                  # Run all linting checks
+make format                # Auto-format all code
+
+# Direct npm commands (from frontend/ directory)
+cd frontend
+npm run lint               # ESLint check
+npm run lint:fix           # ESLint auto-fix
+npm run format             # Prettier format
+npm run format:check       # Prettier check
 ```
 
 ### Testing API
