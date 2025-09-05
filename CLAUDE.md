@@ -40,7 +40,7 @@ A full-stack grocery list management application built with:
 
 ### CI/CD Pipeline - COMPLETED ✅
 - ✅ **GitHub Actions**: Comprehensive test pipeline with parallel jobs
-- ✅ **Matrix Testing**: Frontend tests run on Node.js 18 & 20
+- ✅ **Matrix Testing**: Frontend tests run on Node.js 20 & 22
 - ✅ **Docker Integration**: Cypress tests use docker-compose for consistency
 - ✅ **Coverage Reports**: Automated coverage collection and reporting
 - ✅ **Deployment Pipeline**: Production deployment on main branch
@@ -523,7 +523,7 @@ Comprehensive automated testing and deployment pipeline in `.github/workflows/te
 - Backend: Black, isort, Flake8
 - Frontend: ESLint, Prettier
 - Runs on: ubuntu-latest
-- Node.js: 18, Python: 3.11
+- Node.js: 20, Python: 3.11
 ```
 
 #### **2. 🐍 Backend Tests Job**
@@ -538,7 +538,7 @@ Comprehensive automated testing and deployment pipeline in `.github/workflows/te
 #### **3. ⚛️ Frontend Unit Tests Job** 
 ```yaml
 - Depends on: linting
-- Matrix Strategy: Node.js 18 & 20
+- Matrix Strategy: Node.js 20 & 22
 - Jasmine/Karma with ChromeHeadless
 - Coverage: Uploaded to Codecov
 - 312 tests with 98%+ coverage
