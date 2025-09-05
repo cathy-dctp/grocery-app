@@ -241,7 +241,7 @@ make test
 cd frontend && npm install && npm test
 ```
 
-**EndToEnd Testing** (Cypress)
+**End-to-End Testing** (Cypress)
 
 Note: Cypress is not working fully due to time constraint
 
@@ -249,4 +249,9 @@ Note: Cypress is not working fully due to time constraint
 cd frontend && npm run e2e
 ```
 
+## Known Issues & Future Enhancements
+
+For current limitations, known issues, and planned feature enhancements, see:
+
+**[Known Issues & Wishlist Features](DISCUSSIONS.md)**
 ---
