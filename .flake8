@@ -1,0 +1,25 @@
+[flake8]
+max-line-length = 88
+extend-ignore = 
+    # Black compatibility
+    E203,  # whitespace before ':'
+    W503,  # line break before binary operator
+    # Common Django patterns
+    DJ01,  # Avoid using null=True on string-based fields
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    */migrations/*,
+    node_modules,
+    frontend
+per-file-ignores =
+    # Allow unused imports in __init__.py
+    __init__.py:F401
+    # Allow longer lines in settings files
+    */settings*.py:E501

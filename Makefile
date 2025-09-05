@@ -1,15 +1,17 @@
-# Grocery App Testing Makefile
+# Grocery App Testing and Linting Makefile
 
-.PHONY: test test-local test-docker test-coverage test-clean help
+.PHONY: test test-local test-docker test-coverage test-clean lint-backend format-backend help
 
 # Default target
 help:
-	@echo "Grocery App Test Commands:"
+	@echo "Grocery App Test and Linting Commands:"
 	@echo "  test          - Run tests in Docker (default)"
 	@echo "  test-local    - Run tests locally"
 	@echo "  test-docker   - Run tests in Docker containers"
 	@echo "  test-coverage - Run tests with coverage report"
 	@echo "  test-clean    - Clean up test containers and volumes"
+	@echo "  lint-backend  - Run backend linting (Black, Flake8, isort)"
+	@echo "  format-backend- Auto-format backend code (Black, isort)"
 	@echo "  help          - Show this help message"
 
 # Run tests in Docker (default)
@@ -52,3 +54,22 @@ test-serializers:
 
 test-auth:
 	@cd backend && source venv/bin/activate && DJANGO_SETTINGS_MODULE=grocery_backend.settings python -m pytest grocery_list/tests/test_auth_views.py -v
+
+# Backend Linting and Formatting
+lint-backend:
+	@echo "Running backend linting checks..."
+	@echo "Checking code formatting with Black..."
+	@cd backend && python -m black --check --diff .
+	@echo "Checking import sorting with isort..."
+	@cd backend && python -m isort --check-only --diff .
+	@echo "Running Flake8 linting..."
+	@cd backend && python -m flake8 .
+	@echo "All backend linting checks passed!"
+
+format-backend:
+	@echo "Auto-formatting backend code..."
+	@echo "Formatting code with Black..."
+	@cd backend && python -m black .
+	@echo "Sorting imports with isort..."
+	@cd backend && python -m isort .
+	@echo "Backend code formatted successfully!"
