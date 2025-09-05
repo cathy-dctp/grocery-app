@@ -62,6 +62,7 @@ describe('GroceryListsComponent', () => {
       'getGroceryLists',
       'createGroceryList',
       'deleteGroceryList',
+      'getGroceryList',
     ]);
     mockAuthService = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'logout']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -543,6 +544,156 @@ describe('GroceryListsComponent', () => {
 
       // This should not throw an error
       expect(() => component.formatDate(malformedDate)).not.toThrow();
+    });
+  });
+
+  describe('Sharing Functionality', () => {
+    let mockEvent: jasmine.SpyObj<Event>;
+
+    beforeEach(() => {
+      mockEvent = jasmine.createSpyObj('Event', ['stopPropagation', 'preventDefault']);
+    });
+
+    describe('Open Share Modal', () => {
+      it('should open share modal with correct list', () => {
+        component.openShareModal(mockGroceryList, mockEvent);
+
+        expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        expect(component.selectedListForShare).toEqual(mockGroceryList);
+        expect(component.isShareModalVisible).toBe(true);
+      });
+
+      it('should prevent event bubbling when opening modal', () => {
+        component.openShareModal(mockGroceryList, mockEvent);
+
+        expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        expect(mockEvent.preventDefault).toHaveBeenCalled();
+      });
+    });
+
+    describe('Close Share Modal', () => {
+      it('should close share modal and clear state', () => {
+        // Setup initial state
+        component.selectedListForShare = mockGroceryList;
+        component.isShareModalVisible = true;
+
+        component.closeShareModal();
+
+        expect(component.isShareModalVisible).toBe(false);
+        expect(component.selectedListForShare).toBeNull();
+      });
+    });
+
+    describe('User Shared Event Handler', () => {
+      it('should refresh list data when user is shared', () => {
+        const updatedList: GroceryList = {
+          ...mockGroceryList,
+          shared_with: [
+            ...mockGroceryList.shared_with,
+            {
+              id: 3,
+              username: 'newuser',
+              email: 'new@test.com',
+              first_name: 'New',
+              last_name: 'User',
+            },
+          ],
+        };
+
+        component.selectedListForShare = mockGroceryList;
+        component.lists.set([mockGroceryList]);
+        mockGroceryService.getGroceryList.and.returnValue(of(updatedList));
+
+        component.onUserShared('newuser');
+
+        expect(mockGroceryService.getGroceryList).toHaveBeenCalledWith(mockGroceryList.id);
+        expect(component.lists()[0]).toEqual(updatedList);
+      });
+
+      it('should handle error when refreshing list after sharing', () => {
+        const error = new Error('Refresh failed');
+        component.selectedListForShare = mockGroceryList;
+        mockGroceryService.getGroceryList.and.returnValue(throwError(() => error));
+        spyOn(console, 'error');
+
+        component.onUserShared('newuser');
+
+        expect(console.error).toHaveBeenCalledWith('Error refreshing list after sharing:', error);
+      });
+
+      it('should not refresh when no list is selected for sharing', () => {
+        component.selectedListForShare = null;
+
+        component.onUserShared('newuser');
+
+        expect(mockGroceryService.getGroceryList).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('User Removed Event Handler', () => {
+      it('should refresh list data when user is removed', () => {
+        const updatedList: GroceryList = {
+          ...mockGroceryList,
+          shared_with: [], // User removed
+        };
+
+        component.selectedListForShare = mockGroceryList;
+        component.lists.set([mockGroceryList]);
+        mockGroceryService.getGroceryList.and.returnValue(of(updatedList));
+
+        component.onUserRemoved('shareduser');
+
+        expect(mockGroceryService.getGroceryList).toHaveBeenCalledWith(mockGroceryList.id);
+        expect(component.lists()[0]).toEqual(updatedList);
+      });
+
+      it('should handle error when refreshing list after removing user', () => {
+        const error = new Error('Refresh failed');
+        component.selectedListForShare = mockGroceryList;
+        mockGroceryService.getGroceryList.and.returnValue(throwError(() => error));
+        spyOn(console, 'error');
+
+        component.onUserRemoved('shareduser');
+
+        expect(console.error).toHaveBeenCalledWith(
+          'Error refreshing list after removing user:',
+          error
+        );
+      });
+
+      it('should not refresh when no list is selected for sharing', () => {
+        component.selectedListForShare = null;
+
+        component.onUserRemoved('shareduser');
+
+        expect(mockGroceryService.getGroceryList).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Sharing Modal State Management', () => {
+      it('should initialize sharing modal state correctly', () => {
+        expect(component.isShareModalVisible).toBe(false);
+        expect(component.selectedListForShare).toBeNull();
+      });
+
+      it('should update list in the correct position when refreshing', () => {
+        const list1: GroceryList = { ...mockGroceryList, id: 1, name: 'List 1' };
+        const list2: GroceryList = { ...mockGroceryList, id: 2, name: 'List 2' };
+        const list3: GroceryList = { ...mockGroceryList, id: 3, name: 'List 3' };
+        const updatedList2: GroceryList = { ...list2, name: 'Updated List 2' };
+
+        component.lists.set([list1, list2, list3]);
+        component.selectedListForShare = list2;
+        mockGroceryService.getGroceryList.and.returnValue(of(updatedList2));
+
+        component.onUserShared('newuser');
+
+        const resultLists = component.lists();
+        expect(resultLists[0]).toEqual(list1);
+        expect(resultLists[1]).toEqual(updatedList2);
+        expect(resultLists[2]).toEqual(list3);
+      });
     });
   });
 });

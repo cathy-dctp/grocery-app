@@ -7,6 +7,7 @@ import {
   GroceryList,
   GroceryListItem,
   PaginatedResponse,
+  User,
 } from '../models/api.models';
 
 @Injectable({
@@ -135,5 +136,17 @@ export class GroceryService {
     return this.http.post<void>(`${this.apiUrl}/grocery-lists/${listId}/share_with/`, {
       username,
     });
+  }
+
+  removeUserFromList(listId: number, username: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/grocery-lists/${listId}/remove_user/`, {
+      username,
+    });
+  }
+
+  searchUsers(query: string): Observable<PaginatedResponse<User>> {
+    return this.http.get<PaginatedResponse<User>>(
+      `${this.apiUrl}/users/?search=${encodeURIComponent(query)}`
+    );
   }
 }

@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { GroceryService } from '../../services/grocery.service';
 import { AuthService } from '../../services/auth.service';
 import { GroceryList, AuthUser, User } from '../../models/api.models';
+import { ShareListModalComponent } from '../share-list-modal/share-list-modal.component';
 
 @Component({
   selector: 'app-grocery-lists',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ShareListModalComponent],
   templateUrl: './grocery-lists.component.html',
 })
 export class GroceryListsComponent implements OnInit {
@@ -20,6 +21,10 @@ export class GroceryListsComponent implements OnInit {
 
   showNewListForm = false;
   newListName = '';
+
+  // Sharing modal state
+  isShareModalVisible = false;
+  selectedListForShare: GroceryList | null = null;
 
   constructor(
     private groceryService: GroceryService,
@@ -106,5 +111,50 @@ export class GroceryListsComponent implements OnInit {
         this.router.navigate(['/login']);
       },
     });
+  }
+
+  // Sharing modal methods
+  openShareModal(list: GroceryList, event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.selectedListForShare = list;
+    this.isShareModalVisible = true;
+  }
+
+  closeShareModal() {
+    this.isShareModalVisible = false;
+    this.selectedListForShare = null;
+  }
+
+  onUserShared(_username: string) {
+    // Refresh the specific list to get updated shared_with data
+    if (this.selectedListForShare) {
+      this.groceryService.getGroceryList(this.selectedListForShare.id).subscribe({
+        next: (updatedList) => {
+          this.lists.update((lists) =>
+            lists.map((list) => (list.id === updatedList.id ? updatedList : list))
+          );
+        },
+        error: (err) => {
+          console.error('Error refreshing list after sharing:', err);
+        },
+      });
+    }
+  }
+
+  onUserRemoved(_username: string) {
+    // Refresh the specific list to get updated shared_with data
+    if (this.selectedListForShare) {
+      this.groceryService.getGroceryList(this.selectedListForShare.id).subscribe({
+        next: (updatedList) => {
+          this.lists.update((lists) =>
+            lists.map((list) => (list.id === updatedList.id ? updatedList : list))
+          );
+        },
+        error: (err) => {
+          console.error('Error refreshing list after removing user:', err);
+        },
+      });
+    }
   }
 }

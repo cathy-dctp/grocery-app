@@ -1,7 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
-import { LoginRequest, LoginResponse, AuthUser, RegisterRequest, RegisterResponse } from '../models/api.models';
+import {
+  LoginRequest,
+  LoginResponse,
+  AuthUser,
+  RegisterRequest,
+  RegisterResponse,
+} from '../models/api.models';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -336,7 +342,10 @@ describe('AuthService', () => {
       service.register(mockRegisterRequest).subscribe((response) => {
         expect(response).toEqual(mockRegisterResponse);
 
-        expect(service.getCurrentUser()).toEqual({ ...mockRegisterResponse.user, token: 'new-user-token-123' });
+        expect(service.getCurrentUser()).toEqual({
+          ...mockRegisterResponse.user,
+          token: 'new-user-token-123',
+        });
         expect(service.isAuthenticated()).toBe(true);
 
         expect(localStorage.getItem('currentUser')).toBe(JSON.stringify(mockRegisterResponse.user));

@@ -13,7 +13,8 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    loadComponent: () => import('./components/register/register.component').then((m) => m.RegisterComponent),
+    loadComponent: () =>
+      import('./components/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'lists',

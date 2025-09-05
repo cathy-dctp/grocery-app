@@ -25,13 +25,10 @@ describe('RegisterComponent', () => {
 
   beforeEach(async () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['register']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, RouterTestingModule],
-      providers: [
-        { provide: AuthService, useValue: authServiceSpy },
-      ],
+      providers: [{ provide: AuthService, useValue: authServiceSpy }],
     }).compileComponents();
 
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
