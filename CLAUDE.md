@@ -122,17 +122,22 @@ npm test
 # Unit tests with coverage
 npm test -- --code-coverage
 
-# E2E tests (headless) - PARTIALLY WORKING
+# E2E tests (headless) - DOCKER-BASED
 npm run e2e
 
-# E2E tests (interactive)
+# E2E tests (interactive) - DOCKER-BASED  
 npm run e2e:open
 
-# E2E tests (fast - authentication only)
+# E2E tests (fast - authentication only) - DOCKER-BASED
 npm run e2e:fast
 
-# E2E tests (authentication only)
+# E2E tests (authentication only) - DOCKER-BASED
 npm run e2e:auth
+
+# Docker container management for E2E testing
+npm run docker:start    # Start services manually
+npm run docker:stop     # Stop services manually  
+npm run docker:clean    # Clean up with volumes
 
 # Lint and format
 npm run lint
@@ -466,10 +471,17 @@ Deleted - were dependent on login functionality:
 
 ### **Fast Commands Available**
 ```bash
-npm run e2e:fast      # Run only working authentication tests (36s)
-npm run e2e:auth      # Run authentication tests with UI
-npm run e2e           # Run all tests (includes failures)
+npm run e2e:fast      # Run only working authentication tests with Docker (consistent environment)
+npm run e2e:auth      # Run authentication tests with UI and Docker
+npm run e2e           # Run all tests with Docker environment
 ```
+
+**Docker-First Approach**: Local Cypress tests now use Docker containers for 100% consistency with CI/CD pipeline. The `frontend/scripts/cypress-docker.sh` script manages the full lifecycle:
+- Builds frontend static files
+- Starts Docker services (backend + database) 
+- Runs migrations and seeds test data
+- Executes Cypress tests against Docker environment
+- Cleans up containers automatically
 
 ### **Future Roadmap 🛣️**
 

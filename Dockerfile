@@ -4,7 +4,10 @@ FROM node:20-alpine AS frontend-builder
 # Build Angular app
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+# Remove Cypress from package.json for Docker build, then install dependencies
+RUN sed -i '/"cypress"/d' package.json && \
+    sed -i '/@cypress/d' package.json && \
+    npm ci
 COPY frontend/ ./
 RUN npm run build
 
