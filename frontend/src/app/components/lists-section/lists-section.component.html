@@ -1,0 +1,21 @@
+@if (lists.length > 0) {
+  <div class="mb-12">
+    <div class="flex items-center mb-6">
+      <h2 class="text-2xl font-heading font-bold text-neutral-900 mr-3">{{ title }}</h2>
+      <span [class]="badgeColor + ' text-sm font-medium px-3 py-1 rounded-full'">
+        {{ lists.length }}
+      </span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (list of lists; track list.id) {
+        <app-grocery-list-card
+          [list]="list"
+          [isOwned]="isOwned"
+          [currentUserId]="currentUserId"
+          (shareClicked)="onShareClick($event)"
+          (deleteClicked)="onDeleteClick($event)"
+        ></app-grocery-list-card>
+      }
+    </div>
+  </div>
+}

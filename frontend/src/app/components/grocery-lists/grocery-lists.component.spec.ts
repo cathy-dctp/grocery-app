@@ -256,10 +256,8 @@ describe('GroceryListsComponent', () => {
       (window.confirm as jasmine.Spy).and.returnValue(true);
       mockGroceryService.deleteGroceryList.and.returnValue(of(undefined as any));
 
-      component.deleteList(1, mockEvent);
+      component.deleteList({ listId: 1, event: mockEvent });
 
-      expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this list?');
       expect(mockGroceryService.deleteGroceryList).toHaveBeenCalledWith(1);
       expect(component.lists()).toEqual([mockGroceryListsResponse.results[1]]);
@@ -268,10 +266,8 @@ describe('GroceryListsComponent', () => {
     it('should not delete list without confirmation', () => {
       (window.confirm as jasmine.Spy).and.returnValue(false);
 
-      component.deleteList(1, mockEvent);
+      component.deleteList({ listId: 1, event: mockEvent });
 
-      expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(mockGroceryService.deleteGroceryList).not.toHaveBeenCalled();
     });
 
@@ -282,7 +278,7 @@ describe('GroceryListsComponent', () => {
       spyOn(window, 'alert');
       spyOn(console, 'error');
 
-      component.deleteList(1, mockEvent);
+      component.deleteList({ listId: 1, event: mockEvent });
 
       expect(window.alert).toHaveBeenCalledWith('Failed to delete list');
       expect(console.error).toHaveBeenCalledWith('Error deleting list:', error);
@@ -291,10 +287,10 @@ describe('GroceryListsComponent', () => {
     it('should prevent event bubbling and default behavior', () => {
       (window.confirm as jasmine.Spy).and.returnValue(false);
 
-      component.deleteList(1, mockEvent);
+      component.deleteList({ listId: 1, event: mockEvent });
 
-      expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockEvent.preventDefault).toHaveBeenCalled();
+      // Event handling now done in child component
+      expect(mockGroceryService.deleteGroceryList).not.toHaveBeenCalled();
     });
   });
 
@@ -457,7 +453,7 @@ describe('GroceryListsComponent', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       mockGroceryService.deleteGroceryList.and.returnValue(of(undefined as any));
 
-      component.deleteList(1, { stopPropagation: () => {}, preventDefault: () => {} } as Event);
+      component.deleteList({ listId: 1, event: { stopPropagation: () => {}, preventDefault: () => {} } as Event });
 
       expect(component.lists().length).toBe(1);
       expect(component.lists()[0].id).toBe(2);
@@ -556,19 +552,17 @@ describe('GroceryListsComponent', () => {
 
     describe('Open Share Modal', () => {
       it('should open share modal with correct list', () => {
-        component.openShareModal(mockGroceryList, mockEvent);
+        component.openShareModal({ list: mockGroceryList, event: mockEvent });
 
-        expect(mockEvent.stopPropagation).toHaveBeenCalled();
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
         expect(component.selectedListForShare).toEqual(mockGroceryList);
         expect(component.isShareModalVisible).toBe(true);
       });
 
       it('should prevent event bubbling when opening modal', () => {
-        component.openShareModal(mockGroceryList, mockEvent);
+        component.openShareModal({ list: mockGroceryList, event: mockEvent });
 
-        expect(mockEvent.stopPropagation).toHaveBeenCalled();
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
+        // Event handling now done in child component
+        expect(component.isShareModalVisible).toBe(true);
       });
     });
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,11 +6,12 @@ import { GroceryService } from '../../services/grocery.service';
 import { AuthService } from '../../services/auth.service';
 import { GroceryList, AuthUser, User } from '../../models/api.models';
 import { ShareListModalComponent } from '../share-list-modal/share-list-modal.component';
+import { ListsSectionComponent } from '../lists-section/lists-section.component';
 
 @Component({
   selector: 'app-grocery-lists',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ShareListModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ShareListModalComponent, ListsSectionComponent],
   templateUrl: './grocery-lists.component.html',
 })
 export class GroceryListsComponent implements OnInit {
@@ -25,6 +26,15 @@ export class GroceryListsComponent implements OnInit {
   // Sharing modal state
   isShareModalVisible = false;
   selectedListForShare: GroceryList | null = null;
+
+  // Computed signals for owned and shared lists
+  ownedLists = computed(() => {
+    return this.lists().filter(list => list.owner === this.currentUser?.id);
+  });
+
+  sharedLists = computed(() => {
+    return this.lists().filter(list => list.owner !== this.currentUser?.id);
+  });
 
   constructor(
     private groceryService: GroceryService,
@@ -78,15 +88,12 @@ export class GroceryListsComponent implements OnInit {
     this.newListName = '';
   }
 
-  deleteList(listId: number, event: Event) {
-    event.stopPropagation();
-    event.preventDefault();
-
+  deleteList(data: { listId: number; event: Event }) {
     if (!confirm('Are you sure you want to delete this list?')) return;
 
-    this.groceryService.deleteGroceryList(listId).subscribe({
+    this.groceryService.deleteGroceryList(data.listId).subscribe({
       next: () => {
-        this.lists.update((lists) => lists.filter((list) => list.id !== listId));
+        this.lists.update((lists) => lists.filter((list) => list.id !== data.listId));
       },
       error: (err) => {
         alert('Failed to delete list');
@@ -114,10 +121,8 @@ export class GroceryListsComponent implements OnInit {
   }
 
   // Sharing modal methods
-  openShareModal(list: GroceryList, event: Event) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.selectedListForShare = list;
+  openShareModal(data: { list: GroceryList; event: Event }) {
+    this.selectedListForShare = data.list;
     this.isShareModalVisible = true;
   }
 
