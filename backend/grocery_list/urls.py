@@ -9,6 +9,7 @@ from .views import (
     GroceryListItemViewSet,
     GroceryListViewSet,
     ItemViewSet,
+    UserViewSet,
 )
 
 router = DefaultRouter()
@@ -18,6 +19,7 @@ router.register(r"grocery-lists", GroceryListViewSet, basename="grocerylist")
 router.register(
     r"grocery-list-items", GroceryListItemViewSet, basename="grocerylistitem"
 )
+router.register(r"users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("api/", include(router.urls)),

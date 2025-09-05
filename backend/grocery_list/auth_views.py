@@ -124,7 +124,7 @@ def register(request):
             {"error": "Username already exists"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    except Exception as e:
+    except Exception:
         return Response(
             {"error": "Registration failed. Please try again."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,

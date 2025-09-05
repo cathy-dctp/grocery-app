@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from rest_framework import status, viewsets
@@ -13,6 +14,7 @@ from .serializers import (
     GroceryListItemSerializer,
     GroceryListSimpleSerializer,
     ItemSerializer,
+    UserSerializer,
 )
 
 
@@ -80,10 +82,67 @@ class GroceryListViewSet(viewsets.ModelViewSet):
         grocery_list = self.get_object()
         username = request.data.get("username")
 
+        if not username:
+            return Response(
+                {"error": "Username is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Prevent sharing with self
+        if username == request.user.username:
+            return Response(
+                {"error": "Cannot share list with yourself"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             user = User.objects.get(username=username)
+
+            # Check if already shared
+            if grocery_list.shared_with.filter(id=user.id).exists():
+                return Response(
+                    {"error": f"List is already shared with {username}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             grocery_list.shared_with.add(user)
-            return Response({"message": f"List shared with {username}"})
+            return Response(
+                {
+                    "message": f"List shared with {username}",
+                    "shared_user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                    },
+                }
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=["post"])
+    def remove_user(self, request, pk=None):
+        grocery_list = self.get_object()
+        username = request.data.get("username")
+
+        if not username:
+            return Response(
+                {"error": "Username is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(username=username)
+
+            # Check if user is actually shared with this list
+            if not grocery_list.shared_with.filter(id=user.id).exists():
+                return Response(
+                    {"error": f"List is not shared with {username}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            grocery_list.shared_with.remove(user)
+            return Response({"message": f"Removed {username} from shared list"})
         except User.DoesNotExist:
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
@@ -128,3 +187,29 @@ class GroceryListItemViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(item)
         return Response(serializer.data)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Exclude the current user from search results
+        queryset = User.objects.exclude(id=self.request.user.id).filter(is_active=True)
+
+        # Support search parameter
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search)
+                | Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+            )
+
+        return queryset.order_by("username")
+
+    def list(self, request, *args, **kwargs):
+        """Override list to limit results to 10."""
+        queryset = self.filter_queryset(self.get_queryset())[:10]
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"results": serializer.data})

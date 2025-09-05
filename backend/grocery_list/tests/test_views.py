@@ -1451,3 +1451,263 @@ class TestEnhancedDuplicateItemScenarios:
         # (Same item.name='Tomatoes', so unchecked group order may vary)
         for item in unchecked_items:
             assert not item.is_checked
+
+
+@pytest.mark.api
+class TestEnhancedSharingFeatures:
+    """Test cases for enhanced sharing functionality."""
+
+    @pytest.fixture
+    def authenticated_client(self, db):
+        """Return an authenticated API client."""
+        user = UserFactory()
+        token, created = Token.objects.get_or_create(user=user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+        client.user = user  # Add user for easy access
+        return client
+
+    def test_share_grocery_list_missing_username(self, authenticated_client, db):
+        """Test sharing with missing username parameter."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/share_with/"
+        data = {}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username is required" in response.json()["error"]
+
+    def test_share_grocery_list_with_self(self, authenticated_client, db):
+        """Test preventing self-sharing."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/share_with/"
+        data = {"username": user.username}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Cannot share list with yourself" in response.json()["error"]
+
+    def test_share_grocery_list_already_shared(self, authenticated_client, db):
+        """Test preventing duplicate shares."""
+        user = authenticated_client.user
+        shared_user = UserFactory(username="shared_user")
+        grocery_list = GroceryListFactory(owner=user)
+        grocery_list.shared_with.add(shared_user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/share_with/"
+        data = {"username": "shared_user"}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "List is already shared with shared_user" in response.json()["error"]
+
+    def test_share_grocery_list_enhanced_response(self, authenticated_client, db):
+        """Test enhanced sharing response with user details."""
+        user = authenticated_client.user
+        shared_user = UserFactory(
+            username="new_user", first_name="New", last_name="User"
+        )
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/share_with/"
+        data = {"username": "new_user"}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        response_data = response.json()
+        assert "message" in response_data
+        assert "shared_user" in response_data
+        assert response_data["shared_user"]["username"] == "new_user"
+        assert response_data["shared_user"]["first_name"] == "New"
+        assert response_data["shared_user"]["last_name"] == "User"
+
+        # Verify user was actually added
+        assert grocery_list.shared_with.filter(id=shared_user.id).exists()
+
+    def test_remove_user_from_grocery_list_success(self, authenticated_client, db):
+        """Test successfully removing a user from shared list."""
+        user = authenticated_client.user
+        shared_user = UserFactory(username="to_remove")
+        grocery_list = GroceryListFactory(owner=user)
+        grocery_list.shared_with.add(shared_user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/remove_user/"
+        data = {"username": "to_remove"}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert "Removed to_remove from shared list" in response.json()["message"]
+
+        # Verify user was actually removed
+        assert not grocery_list.shared_with.filter(id=shared_user.id).exists()
+
+    def test_remove_user_missing_username(self, authenticated_client, db):
+        """Test removing user with missing username parameter."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/remove_user/"
+        data = {}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username is required" in response.json()["error"]
+
+    def test_remove_user_not_shared(self, authenticated_client, db):
+        """Test removing user who isn't shared with the list."""
+        user = authenticated_client.user
+        not_shared_user = UserFactory(username="not_shared")
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/remove_user/"
+        data = {"username": "not_shared"}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "List is not shared with not_shared" in response.json()["error"]
+
+    def test_remove_user_nonexistent_user(self, authenticated_client, db):
+        """Test removing nonexistent user."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+
+        url = f"/api/grocery-lists/{grocery_list.id}/remove_user/"
+        data = {"username": "nonexistent"}
+
+        response = authenticated_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "User not found" in response.json()["error"]
+
+
+@pytest.mark.api
+class TestUserViewSet:
+    """Test cases for the UserViewSet for user search."""
+
+    @pytest.fixture
+    def authenticated_client(self, db):
+        """Return an authenticated API client."""
+        user = UserFactory(username="search_user")
+        token, created = Token.objects.get_or_create(user=user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+        client.user = user
+        return client
+
+    def test_list_users_authenticated(self, authenticated_client, db):
+        """Test listing users with authentication."""
+        # Create some test users
+        UserFactory(username="alice", first_name="Alice", last_name="Smith")
+        UserFactory(username="bob", first_name="Bob", last_name="Jones")
+        UserFactory(username="charlie", first_name="Charlie", last_name="Brown")
+
+        url = "/api/users/"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+
+        # Should exclude the authenticated user
+        usernames = [u["username"] for u in users]
+        assert "search_user" not in usernames
+        assert "alice" in usernames
+        assert "bob" in usernames
+        assert "charlie" in usernames
+
+    def test_search_users_by_username(self, authenticated_client, db):
+        """Test searching users by username."""
+        UserFactory(username="alice_doe", first_name="Alice", last_name="Smith")
+        UserFactory(username="bob_smith", first_name="Bob", last_name="Jones")
+        UserFactory(username="charlie_alice", first_name="Charlie", last_name="Brown")
+
+        url = "/api/users/?search=alice"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+        assert len(users) == 2
+
+        usernames = [u["username"] for u in users]
+        assert "alice_doe" in usernames
+        assert "charlie_alice" in usernames
+        assert "bob_smith" not in usernames
+
+    def test_search_users_by_first_name(self, authenticated_client, db):
+        """Test searching users by first name."""
+        UserFactory(username="user1", first_name="Alice", last_name="Smith")
+        UserFactory(username="user2", first_name="Bob", last_name="Jones")
+        UserFactory(username="user3", first_name="Alice", last_name="Brown")
+
+        url = "/api/users/?search=Alice"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+        assert len(users) == 2
+
+        first_names = [u["first_name"] for u in users]
+        assert all(name == "Alice" for name in first_names)
+
+    def test_search_users_by_last_name(self, authenticated_client, db):
+        """Test searching users by last name."""
+        UserFactory(username="user1", first_name="Alice", last_name="Smith")
+        UserFactory(username="user2", first_name="Bob", last_name="Smith")
+        UserFactory(username="user3", first_name="Charlie", last_name="Brown")
+
+        url = "/api/users/?search=Smith"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+        assert len(users) == 2
+
+        last_names = [u["last_name"] for u in users]
+        assert all(name == "Smith" for name in last_names)
+
+    def test_users_exclude_inactive_users(self, authenticated_client, db):
+        """Test that inactive users are excluded from search."""
+        UserFactory(username="active_user", is_active=True)
+        UserFactory(username="inactive_user", is_active=False)
+
+        url = "/api/users/"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+
+        usernames = [u["username"] for u in users]
+        assert "active_user" in usernames
+        assert "inactive_user" not in usernames
+
+    def test_users_limit_results(self, authenticated_client, db):
+        """Test that user search is limited to 10 results."""
+        # Create 15 users
+        for i in range(15):
+            UserFactory(username=f"user{i:02d}")
+
+        url = "/api/users/"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        users = response.json()["results"]
+        assert len(users) <= 10  # Limited to 10 results
+
+    def test_users_unauthenticated_access_denied(self, db):
+        """Test that unauthenticated access to users is denied."""
+        client = APIClient()
+        url = "/api/users/"
+
+        response = client.get(url)
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
