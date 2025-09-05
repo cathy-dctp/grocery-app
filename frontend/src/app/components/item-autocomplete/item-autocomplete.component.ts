@@ -18,8 +18,7 @@ export interface AutocompleteItem {
   selector: 'app-item-autocomplete',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './item-autocomplete.component.html',
-  styleUrl: './item-autocomplete.component.scss'
+  templateUrl: './item-autocomplete.component.html'
 })
 export class ItemAutocompleteComponent {
   @Input() placeholder: string = 'Start typing to search items...';

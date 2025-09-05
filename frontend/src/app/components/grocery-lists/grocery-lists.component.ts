@@ -10,8 +10,7 @@ import { GroceryList, AuthUser, User } from '../../models/api.models';
   selector: 'app-grocery-lists',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: './grocery-lists.component.html',
-  styleUrl: './grocery-lists.component.scss'
+  templateUrl: './grocery-lists.component.html'
 })
 export class GroceryListsComponent implements OnInit {
   lists = signal<GroceryList[]>([]);
