@@ -1,6 +1,6 @@
 # Grocery List Manager
 
-A full-stack web application for managing family grocery lists with real-time collaboration and smart features.
+A full-stack web application for managing family grocery lists with sharing features.
 
 ![Tech Stack](https://img.shields.io/badge/Frontend-Angular%2020-red)
 ![Backend](https://img.shields.io/badge/Backend-Django%204.2-green)
@@ -9,7 +9,7 @@ A full-stack web application for managing family grocery lists with real-time co
 ![Tests](https://img.shields.io/badge/Tests-147%2B-brightgreen)
 ![Coverage](https://img.shields.io/badge/Coverage-98%25-brightgreen)
 
-## 🚀 Live Demo
+## Live Demo
 
 **Production App**: [https://grocery-app-production-bc43.up.railway.app/](https://grocery-app-production-bc43.up.railway.app/)
 
@@ -18,162 +18,77 @@ A full-stack web application for managing family grocery lists with real-time co
 - Username: `jane_smith` | Password: `password123` 
 - Username: `admin` | Password: `admin123` (admin access)
 
-## ⚡ Quick Start
+## Quick Start
 
-**One Command Setup**
+### Option 1: Docker Setup (Recommended)
 
+**Prerequisites**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+
+**Setup**
 ```bash
+# Clone the repository
+git clone https://github.com/cathy-dctp/grocery-app.git
+cd grocery-app
+
+# Start all services
 docker-compose up
 ```
 
-That's it! The app will be running at [http://localhost:8000](http://localhost:8000)
+The app will be running at [http://localhost:8000](http://localhost:8000)
 
-- ✅ Frontend and backend served from single container
-- ✅ PostgreSQL database automatically configured
-- ✅ Test data pre-loaded with sample grocery lists
-- ✅ Production-ready deployment configuration
+- Frontend and backend served from single container
+- PostgreSQL database automatically configured  
+- Test data pre-loaded with sample grocery lists
+- Production-ready deployment configuration
 
-## ✨ Core Features
+### Option 2: Local Development Setup
 
-**Essential grocery management** with user authentication, multiple lists, and family collaboration.
+**Prerequisites**
+- **Node.js 18+** and npm - [Download here](https://nodejs.org/)
+- **Python 3.11+** - [Download here](https://www.python.org/downloads/)
 
-### User Authentication
-- Secure login/logout with token-based authentication
-- User-specific data filtering and route protection
-
-### Smart List Management  
-- Create and manage multiple grocery lists
-- Autocomplete suggestions from existing items database
-- Custom item names (e.g., "Organic Bananas" instead of just "Bananas")
-- Flexible quantities and units per item
-- Inline editing for quick updates
-
-### Family Collaboration
-- Share lists with other family members
-- Real-time collaboration on shared grocery lists
-- User permissions and data isolation
-
-### User Experience
-- Clean, intuitive interface with visual feedback
-- Loading states and error handling
-
-## 🛠️ Technical Stack
-
-### Frontend
-- **Angular 20** with TypeScript for type safety
-- **Tailwind CSS** for responsive styling
-- **Standalone Components** architecture
-- **RxJS** for reactive programming
-- **Authentication Guards** and HTTP interceptors
-
-### Backend
-- **Django 4.2** with Django REST Framework
-- **PostgreSQL** database with proper relationships
-- **Token-based authentication**
-- **CORS enabled** for frontend communication
-- **WhiteNoise** for static file serving
-
-### DevOps & Deployment
-- **Docker** containerization with multi-stage builds
-- **Railway** cloud deployment
-- **Automated testing** with comprehensive test suite
-- **Environment-based configuration**
-
-## 🤖 Development Approach & Learning Journey
-
-### Technology Stack Selection
-I chose Django + Angular + PostgreSQL specifically to align with RideCo's technology stack and demonstrate my ability to rapidly learn and implement solutions with technologies that were new to me. This tech stack selection was strategic - to show how quickly I can become productive with RideCo's frameworks while building production-ready applications.
-
-### AI-Assisted Development
-This project was built with the assistance of **Claude Code (Anthropic's AI)** as a learning accelerator and coding companion. Here's how I approached this:
-
-**🎯 Learning-First Approach:**
-- Used AI to rapidly prototype and understand best practices in Django and Angular
-- Focused on comprehending every piece of generated code rather than just copy-pasting
-- Iteratively refined implementations based on understanding architectural trade-offs
-- Ensured I can explain every design decision and code pattern in depth
-
-**🧠 Deep Understanding Focus:**
-- **Authentication Flow**: Token-based auth implementation and security considerations
-- **Database Design**: Why certain constraints were removed, user-based filtering strategy
-- **Component Architecture**: Angular standalone components and reactive patterns
-- **Testing Strategy**: Factory patterns, comprehensive coverage, and TDD practices
-- **Docker Architecture**: Single-container deployment strategy and production considerations
-
-**💡 Key Learning Outcomes:**
-- **Django ORM**: Model relationships, migrations, query optimization
-- **Angular Ecosystem**: TypeScript, RxJS, component lifecycle, routing guards
-- **API Design**: REST principles, serialization, authentication middleware
-- **DevOps Practices**: Containerization, environment configuration, deployment pipelines
-- **Testing Methodologies**: Unit testing, integration testing, mocking strategies (comprehensive test suite also AI-generated)
-
-**🔍 What I Can Explain:**
-Every architectural decision, from why token authentication over sessions, to the single-container Docker setup, to the database design. Even though the comprehensive testing suite (147+ tests) was also AI-generated, I thoroughly understand the testing patterns, factory implementations, and coverage strategies used.
-
-This approach allowed me to deliver a production-quality application while genuinely learning RideCo's technology stack, rather than just completing a coding exercise. The AI assistance enabled rapid learning and implementation, but the deep understanding of every component is entirely my own.
-
-## 🏗️ Architecture Decisions
-
-### Why This Tech Stack?
-- **Django + Angular**: Clear separation between API and frontend enables independent development
-- **Token Authentication**: Stateless authentication for API consumption
-- **PostgreSQL**: Robust relational database with Django ORM support
-- **Docker**: Ensures consistent environments from development to production
-
-### Database Design
-- **User-based filtering**: All data automatically scoped to authenticated user
-- **Audit trail**: Track who added items and when they were marked complete
-
-### Single Container Architecture
-- **Simplified deployment**: One container serves both frontend and API
-- **WhiteNoise integration**: Serves Angular static files directly from Django
-- **Development parity**: Same setup works locally and in production
-
-## 🧪 Quality Assurance
-
-### Comprehensive Testing
+**Backend Setup**
 ```bash
-# Run all 147+ tests
-make test
+# Clone repository
+git clone https://github.com/cathy-dctp/grocery-app.git
+cd grocery-app
 
-# Local development tests
-make test-local
+# Run Docker for database
+docker-compose up db -d 
 
-# Coverage report (98%+ coverage)
-make test-coverage
-```
+# Set up Python virtual environment
+cd backend
+python -m venv venv
+source venv/bin/activate 
 
-**Test Categories:**
-- ✅ **Models** (46 tests): Business logic, constraints, relationships
-- ✅ **Serializers** (25 tests): Data validation, nested fields
-- ✅ **Authentication** (23 tests): Login, logout, token management
-- ✅ **API Endpoints** (54 tests): CRUD operations, permissions, filtering
-- ✅ **Custom Actions** (14 tests): Special endpoints like add_item, toggle_checked
+# Install dependencies
+pip install -r requirements.txt
 
-### Code Standards
-- TypeScript for frontend type safety
-- Python type hints and comprehensive docstrings
-- Factory-based test data with realistic fixtures
-- Clean architecture with proper separation of concerns
-- Automated testing pipeline
+# (Optional) Migrate if any new migrations 
+python manage.py migrate
 
-## 🚀 Development
-
-### Local Development
-```bash
-# Option 1: Docker (Recommended)
-docker-compose up
-
-# Option 2: Separate services for development
-# Terminal 1: Backend
-cd backend && source venv/bin/activate
+# Start backend server
 python manage.py runserver 0.0.0.0:8000
-
-# Terminal 2: Frontend
-cd frontend && npm start  # http://localhost:4200
 ```
 
-### API Documentation
+**Frontend Setup** (in a new terminal)
+```bash
+cd grocery-app/frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+**Access the application:**
+- Frontend: [http://localhost:4200](http://localhost:4200) 
+- Backend API: [http://localhost:8000/api](http://localhost:8000/api)
+
+### Example API calls
+
 ```bash
 # Test API endpoints
 TOKEN="your_token_here"
@@ -194,7 +109,81 @@ curl -X POST http://localhost:8000/api/grocery-lists/ \
   -d '{"name": "Weekly Shopping"}'
 ```
 
-## 💡 Future Enhancements
+## Core Features
+
+**Essential grocery management** with user authentication, multiple lists, and family collaboration.
+
+### User Authentication
+- Signup/Login/Logout with token-based authentication
+- User-specific data filtering and route protection
+
+### List Management  
+- Create and manage multiple grocery lists
+- Autocomplete suggestions from existing items database
+- Custom item names (e.g., "Organic Bananas" instead of just "Bananas")
+- Flexible quantities and units per item
+
+### Family Collaboration
+- Share lists with other family members
+- Collaboration on shared grocery lists
+
+### User Experience
+- Working interface on both desktop and mobile web 
+
+## Technical Stack
+
+### Frontend
+- **Angular 20** with TypeScript for type safety
+- **Tailwind CSS** for responsive styling
+- **Standalone Components** architecture
+- **RxJS** for reactive programming
+- **Authentication Guards** and HTTP interceptors
+
+### Backend
+- **Django 4.2** with Django REST Framework
+- **PostgreSQL** database with proper relationships
+- **Token-based authentication**
+- **WhiteNoise** for static file serving
+
+### DevOps & Deployment
+- **Docker** containerization with multi-stage builds
+- **Railway** cloud deployment
+- **Automated testing** with comprehensive test suite
+
+## Development Approach 
+
+### Technology Stack Selection
+I chose Django + Angular + PostgreSQL specifically to align with RideCo's technology stack and demonstrate my ability to rapidly learn and implement solutions with technologies that were new to me. 
+
+### Disclaimer: AI-Assisted Development
+This project was built with the help of generated AI as a learning accelerator and coding companion but I make sure that I understand the generated code and guide the AI so that the code is robust and well-tested. I make sure all the app ideas are from my own and only use AI to prototype and understand best practices in Django and Angular. Particularly for the extensive test suite (147+ tests) I designed and reviewed but had AI implement to ensure full coverage within project timelines.
+
+## Testing
+
+- CI/CD pipeline setup on Github https://github.com/cathy-dctp/grocery-app/actions
+
+**Backend Testing** (Django TestCase, Factory Boy)
+
+```bash
+# Run all backend tests
+make test
+```
+**Frontend Testing** (Jasmine/Karma for unit tests)
+
+```bash
+# Run all frontend tests
+cd frontend && npm install && npm test 
+```
+
+**EndToEnd Testing** (Cypress)
+
+Note: Cypress is not working fully due to time constraint
+
+```bash
+cd frontend && npm run e2e 
+```
+
+## Future Enhancements
 
 ### User Experience Features
 - **Smart Categories**: Auto-categorize items by store sections (produce, dairy, frozen)
@@ -241,24 +230,4 @@ curl -X POST http://localhost:8000/api/grocery-lists/ \
 - **Microservices**: Break into smaller services as user base grows
 - **Mobile API**: Optimized endpoints for mobile app consumption
 
-## 📊 Project Stats
-
-- **Lines of Code**: ~3,000+ (backend + frontend)
-- **Test Coverage**: 98%+ across all modules
-- **API Endpoints**: 15+ REST endpoints with authentication
-- **Database Tables**: 4 core models with proper relationships
-- **Frontend Components**: 8 reusable Angular components
-- **Docker Images**: Multi-stage build optimized for production
-
-## 🤝 Contributing
-
-This project demonstrates modern full-stack development practices with:
-- Test-driven development approach
-- Clean code architecture
-- Comprehensive documentation
-- Production-ready deployment
-- Responsive user interface design
-
 ---
-
-*A modern grocery list management application showcasing full-stack development skills with Django, Angular, and Docker.*
