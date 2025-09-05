@@ -171,7 +171,7 @@ describe('GroceryListDetailComponent', () => {
       component.ngOnInit();
 
       expect(mockGroceryService.getGroceryList).toHaveBeenCalledWith(1);
-      expect(mockGroceryService.getGroceryListItems).toHaveBeenCalledWith(1);
+      expect(mockGroceryService.getGroceryListItems).toHaveBeenCalledWith(1, 1);
       expect(mockGroceryService.getCategories).toHaveBeenCalled();
     });
 
@@ -209,7 +209,7 @@ describe('GroceryListDetailComponent', () => {
 
         expect(component.loading()).toBe(false);
         expect(component.items()).toEqual(mockGroceryListItems);
-        expect(mockGroceryService.getGroceryListItems).toHaveBeenCalledWith(0);
+        expect(mockGroceryService.getGroceryListItems).toHaveBeenCalledWith(0, 1);
       });
 
       it('should set loading state during load', () => {

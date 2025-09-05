@@ -97,10 +97,18 @@ export class GroceryService {
   }
 
   // Grocery List Items
-  getGroceryListItems(listId?: number): Observable<PaginatedResponse<GroceryListItem>> {
-    const url = listId
+  getGroceryListItems(
+    listId?: number,
+    page?: number
+  ): Observable<PaginatedResponse<GroceryListItem>> {
+    let url = listId
       ? `${this.apiUrl}/grocery-list-items/?grocery_list=${listId}`
       : `${this.apiUrl}/grocery-list-items/`;
+
+    if (page) {
+      url += listId ? `&page=${page}` : `?page=${page}`;
+    }
+
     return this.http.get<PaginatedResponse<GroceryListItem>>(url);
   }
 

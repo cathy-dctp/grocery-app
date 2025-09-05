@@ -19,7 +19,10 @@ export class GroceryListDetailComponent implements OnInit {
   availableItems = signal<Item[]>([]);
   categories = signal<Category[]>([]);
   loading = signal(false);
+  loadingMore = signal(false);
   error = signal<string | null>(null);
+  hasMoreItems = signal(false);
+  currentPage = signal(1);
 
   // Form handling
   isProcessing = signal(false);
@@ -52,16 +55,33 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
 
-  loadListItems() {
-    this.loading.set(true);
-    this.groceryService.getGroceryListItems(this.listId).subscribe({
+  loadListItems(page: number = 1, append: boolean = false) {
+    if (!append) {
+      this.loading.set(true);
+      this.currentPage.set(1);
+    } else {
+      this.loadingMore.set(true);
+    }
+
+    this.groceryService.getGroceryListItems(this.listId, page).subscribe({
       next: (response) => {
-        this.items.set(response.results);
-        this.loading.set(false);
+        if (append) {
+          this.items.update((items) => [...items, ...response.results]);
+          this.loadingMore.set(false);
+        } else {
+          this.items.set(response.results);
+          this.loading.set(false);
+        }
+        this.hasMoreItems.set(!!response.next);
+        this.currentPage.set(page);
       },
       error: (err) => {
         this.error.set('Failed to load items');
-        this.loading.set(false);
+        if (append) {
+          this.loadingMore.set(false);
+        } else {
+          this.loading.set(false);
+        }
         console.error('Error loading items:', err);
       },
     });
@@ -177,6 +197,12 @@ export class GroceryListDetailComponent implements OnInit {
         this.handleError('Failed to remove item', err);
       },
     });
+  }
+
+  loadMoreItems() {
+    if (this.hasMoreItems() && !this.loadingMore()) {
+      this.loadListItems(this.currentPage() + 1, true);
+    }
   }
 
   private handleError(
