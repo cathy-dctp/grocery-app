@@ -84,6 +84,7 @@ def register(request):
     # Validate email format if provided
     if email:
         from django.core.validators import validate_email
+
         try:
             validate_email(email)
         except ValidationError:
