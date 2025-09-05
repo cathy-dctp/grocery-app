@@ -1,6 +1,6 @@
 # Grocery App Testing and Linting Makefile
 
-.PHONY: test test-local test-docker test-coverage test-clean lint-backend format-backend help
+.PHONY: test test-local test-docker test-coverage test-clean lint-backend format-backend lint-frontend format-frontend help
 
 # Default target
 help:
@@ -12,6 +12,8 @@ help:
 	@echo "  test-clean    - Clean up test containers and volumes"
 	@echo "  lint-backend  - Run backend linting (Black, Flake8, isort)"
 	@echo "  format-backend- Auto-format backend code (Black, isort)"
+	@echo "  lint-frontend - Run frontend linting (ESLint, Prettier)"
+	@echo "  format-frontend- Auto-format frontend code (ESLint, Prettier)"
 	@echo "  help          - Show this help message"
 
 # Run tests in Docker (default)
@@ -73,3 +75,20 @@ format-backend:
 	@echo "Sorting imports with isort..."
 	@cd backend && python -m isort .
 	@echo "Backend code formatted successfully!"
+
+# Frontend Linting and Formatting
+lint-frontend:
+	@echo "Running frontend linting checks..."
+	@echo "Checking TypeScript and HTML with ESLint..."
+	@cd frontend && npm run lint
+	@echo "Checking code formatting with Prettier..."
+	@cd frontend && npm run format:check
+	@echo "All frontend linting checks passed!"
+
+format-frontend:
+	@echo "Auto-formatting frontend code..."
+	@echo "Fixing code issues with ESLint..."
+	@cd frontend && npm run lint:fix
+	@echo "Formatting code with Prettier..."
+	@cd frontend && npm run format
+	@echo "Frontend code formatted successfully!"

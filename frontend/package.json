@@ -7,16 +7,30 @@
     "start:no-proxy": "ng serve --open",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "eslint . --ext .ts,.html",
+    "lint:fix": "eslint . --ext .ts,.html --fix",
+    "format": "prettier --write \"src/**/*.{ts,html,scss,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss,css,json}\""
   },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
+    "semi": true,
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "useTabs": false,
     "overrides": [
       {
         "files": "*.html",
         "options": {
           "parser": "angular"
+        }
+      },
+      {
+        "files": "*.scss",
+        "options": {
+          "singleQuote": false
         }
       }
     ]
@@ -34,11 +48,21 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "^20.2.0",
+    "@angular-eslint/eslint-plugin": "^20.2.0",
+    "@angular-eslint/eslint-plugin-template": "^20.2.0",
+    "@angular-eslint/schematics": "^20.2.0",
+    "@angular-eslint/template-parser": "^20.2.0",
     "@angular/build": "^20.2.1",
     "@angular/cli": "^20.2.1",
     "@angular/compiler-cli": "^20.2.0",
     "@types/jasmine": "~5.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
