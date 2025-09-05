@@ -434,3 +434,140 @@ class TestAuthenticationIntegration:
 
         # Both should return same user data
         assert response1.json()["user"]["id"] == response2.json()["user"]["id"]
+
+
+@pytest.mark.api
+class TestRegisterEndpoint:
+    """Test cases for the register endpoint."""
+
+    def test_successful_registration(self, db):
+        """Test successful user registration."""
+        client = APIClient()
+        url = reverse("register")
+        data = {
+            "username": "newuser",
+            "email": "new@example.com",
+            "password": "password123",
+            "first_name": "New",
+            "last_name": "User",
+        }
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response_data = response.json()
+        assert "user" in response_data
+        assert "token" in response_data
+
+        # Verify user was created
+        user = User.objects.get(username="newuser")
+        assert user.email == "new@example.com"
+        assert user.first_name == "New"
+        assert user.last_name == "User"
+        assert user.check_password("password123")
+
+        # Verify token was created
+        token = Token.objects.get(user=user)
+        assert response_data["token"] == token.key
+
+    def test_registration_minimal_data(self, db):
+        """Test registration with only required fields."""
+        client = APIClient()
+        url = reverse("register")
+        data = {
+            "username": "minimaluser",
+            "password": "password123",
+        }
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        user = User.objects.get(username="minimaluser")
+        assert user.email == ""
+        assert user.first_name == ""
+        assert user.last_name == ""
+
+    def test_registration_missing_username(self, db):
+        """Test registration with missing username."""
+        client = APIClient()
+        url = reverse("register")
+        data = {"password": "password123"}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username and password are required" in response.json()["error"]
+
+    def test_registration_missing_password(self, db):
+        """Test registration with missing password."""
+        client = APIClient()
+        url = reverse("register")
+        data = {"username": "testuser"}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username and password are required" in response.json()["error"]
+
+    def test_registration_empty_password(self, db):
+        """Test registration with empty password."""
+        client = APIClient()
+        url = reverse("register")
+        data = {"username": "testuser", "password": ""}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username and password are required" in response.json()["error"]
+
+    def test_registration_whitespace_password(self, db):
+        """Test registration with whitespace-only password."""
+        client = APIClient()
+        url = reverse("register")
+        data = {"username": "testuser", "password": "   "}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Password cannot be empty" in response.json()["error"]
+
+    def test_registration_username_too_short(self, db):
+        """Test registration with username too short."""
+        client = APIClient()
+        url = reverse("register")
+        data = {"username": "ab", "password": "password123"}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username must be at least 3 characters long" in response.json()["error"]
+
+    def test_registration_duplicate_username(self, db):
+        """Test registration with existing username."""
+        # Create existing user
+        User.objects.create_user(username="existinguser", password="pass123")
+
+        client = APIClient()
+        url = reverse("register")
+        data = {"username": "existinguser", "password": "newpass123"}
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Username already exists" in response.json()["error"]
+
+    def test_registration_invalid_email(self, db):
+        """Test registration with invalid email format."""
+        client = APIClient()
+        url = reverse("register")
+        data = {
+            "username": "testuser",
+            "email": "invalidemail",
+            "password": "password123",
+        }
+
+        response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Enter a valid email address" in response.json()["error"]
