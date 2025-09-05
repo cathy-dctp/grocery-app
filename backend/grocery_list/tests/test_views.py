@@ -892,8 +892,8 @@ class TestCustomActions:
         assert response_data['unit'] == 'piece'  # Should use item's default_unit
         assert response_data['notes'] == ''
 
-    def test_add_existing_item_increments_quantity(self, authenticated_client, db):
-        """Test that adding an existing item increments its quantity."""
+    def test_add_existing_item_creates_new_entry(self, authenticated_client, db):
+        """Test that adding an existing item creates a new entry instead of incrementing."""
         user = authenticated_client.user
         category = CategoryFactory()
         item = ItemFactory(category=category)
@@ -918,11 +918,15 @@ class TestCustomActions:
         assert response.status_code == status.HTTP_201_CREATED
         
         response_data = response.json()
-        assert float(response_data['quantity']) == 5.0  # 3 + 2
+        assert float(response_data['quantity']) == 2.0  # New entry with quantity 2
         
-        # Verify in database
+        # Verify both items exist in database
+        items_in_list = GroceryListItem.objects.filter(grocery_list=grocery_list, item=item)
+        assert items_in_list.count() == 2
+        
+        # Original item should remain unchanged
         existing_item.refresh_from_db()
-        assert existing_item.quantity == 5
+        assert existing_item.quantity == 3
 
     def test_add_item_nonexistent_item(self, authenticated_client, db):
         """Test adding a nonexistent item returns 404."""
@@ -1137,3 +1141,367 @@ class TestCustomActions:
         response = authenticated_client.post(url)
         
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.api
+class TestGroceryListItemPatchUpdates:
+    """Test PATCH functionality for grocery list items (partial updates)."""
+
+    @pytest.fixture
+    def authenticated_client(self, db):
+        """Return an authenticated API client."""
+        user = UserFactory()
+        token, created = Token.objects.get_or_create(user=user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
+        client.user = user  # Store user for test access
+        return client
+
+    def grocery_list_item_detail_url(self, pk):
+        """Return the grocery list item detail URL."""
+        return reverse('grocerylistitem-detail', args=[pk])
+
+    def test_patch_update_custom_name_only(self, authenticated_client, db):
+        """Test PATCH updating only custom_name field."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+        item = ItemFactory(name='Apple')
+        grocery_list_item = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Old Custom Name',
+            quantity=3,
+            unit='pieces',
+            notes='Original notes',
+            added_by=user
+        )
+        
+        url = self.grocery_list_item_detail_url(grocery_list_item.pk)
+        data = {
+            'custom_name': 'Updated Custom Name'
+        }
+        
+        response = authenticated_client.patch(url, data, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        
+        response_data = response.json()
+        assert response_data['custom_name'] == 'Updated Custom Name'
+        assert response_data['display_name'] == 'Updated Custom Name'
+        # Other fields should remain unchanged
+        assert float(response_data['quantity']) == 3.0
+        assert response_data['unit'] == 'pieces'
+        assert response_data['notes'] == 'Original notes'
+        
+        # Verify in database
+        grocery_list_item.refresh_from_db()
+        assert grocery_list_item.custom_name == 'Updated Custom Name'
+        assert grocery_list_item.quantity == 3
+        assert grocery_list_item.notes == 'Original notes'
+
+    def test_patch_update_quantity_and_unit(self, authenticated_client, db):
+        """Test PATCH updating quantity and unit fields."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+        grocery_list_item = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            custom_name='My Custom Item',
+            quantity=2,
+            unit='pieces',
+            notes='Some notes',
+            added_by=user
+        )
+        
+        url = self.grocery_list_item_detail_url(grocery_list_item.pk)
+        data = {
+            'quantity': '5.5',
+            'unit': 'kg'
+        }
+        
+        response = authenticated_client.patch(url, data, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        
+        response_data = response.json()
+        assert float(response_data['quantity']) == 5.5
+        assert response_data['unit'] == 'kg'
+        # Other fields should remain unchanged
+        assert response_data['custom_name'] == 'My Custom Item'
+        assert response_data['notes'] == 'Some notes'
+
+    def test_patch_clear_custom_name(self, authenticated_client, db):
+        """Test PATCH can clear custom_name to make display_name fall back to item name."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+        item = ItemFactory(name='Banana')
+        grocery_list_item = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Custom Banana Name',
+            added_by=user
+        )
+        
+        url = self.grocery_list_item_detail_url(grocery_list_item.pk)
+        data = {
+            'custom_name': ''  # Clear the custom name
+        }
+        
+        response = authenticated_client.patch(url, data, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        
+        response_data = response.json()
+        assert response_data['custom_name'] == ''
+        assert response_data['display_name'] == 'Banana'  # Should fall back to item name
+        assert response_data['item_name'] == 'Banana'
+
+
+@pytest.mark.api
+class TestEnhancedDuplicateItemScenarios:
+    """Test enhanced scenarios with duplicate items after removing unique constraint."""
+
+    @pytest.fixture
+    def authenticated_client(self, db):
+        """Return an authenticated API client."""
+        user = UserFactory()
+        token, created = Token.objects.get_or_create(user=user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
+        client.user = user  # Store user for test access
+        return client
+
+    def test_same_item_different_units(self, authenticated_client, db):
+        """Test adding same item with different units creates separate entries."""
+        user = authenticated_client.user
+        category = CategoryFactory()
+        item = ItemFactory(category=category, name='Apples', default_unit='piece')
+        grocery_list = GroceryListFactory(owner=user)
+        
+        url = f'/api/grocery-lists/{grocery_list.id}/add_item/'
+        
+        # Add apples by pieces
+        data1 = {
+            'item_id': item.id,
+            'quantity': 5,
+            'unit': 'pieces'
+        }
+        response1 = authenticated_client.post(url, data1, format='json')
+        assert response1.status_code == status.HTTP_201_CREATED
+        
+        # Add apples by weight
+        data2 = {
+            'item_id': item.id,
+            'quantity': 2.5,
+            'unit': 'lbs'
+        }
+        response2 = authenticated_client.post(url, data2, format='json')
+        assert response2.status_code == status.HTTP_201_CREATED
+        
+        # Verify both entries exist
+        items_in_list = GroceryListItem.objects.filter(grocery_list=grocery_list, item=item)
+        assert items_in_list.count() == 2
+        
+        # Check both have different units and quantities
+        units = [gli.unit for gli in items_in_list]
+        quantities = [float(gli.quantity) for gli in items_in_list]
+        
+        assert 'pieces' in units
+        assert 'lbs' in units
+        assert 5.0 in quantities
+        assert 2.5 in quantities
+
+    def test_same_item_different_custom_names(self, authenticated_client, db):
+        """Test adding same item with different custom names creates separate entries."""
+        user = authenticated_client.user
+        category = CategoryFactory()
+        item = ItemFactory(category=category, name='Milk')
+        grocery_list = GroceryListFactory(owner=user)
+        
+        # Create first entry with custom name
+        item1 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Whole Milk',
+            quantity=1,
+            unit='gallon',
+            added_by=user
+        )
+        
+        # Create second entry with different custom name
+        item2 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Almond Milk',
+            quantity=2,
+            unit='cartons',
+            added_by=user
+        )
+        
+        # Verify both exist and have different display names
+        items = GroceryListItem.objects.filter(grocery_list=grocery_list, item=item)
+        assert items.count() == 2
+        
+        from grocery_list.serializers import GroceryListItemSerializer
+        serializer1 = GroceryListItemSerializer(item1)
+        serializer2 = GroceryListItemSerializer(item2)
+        
+        assert serializer1.data['display_name'] == 'Whole Milk'
+        assert serializer2.data['display_name'] == 'Almond Milk'
+        assert serializer1.data['item_name'] == 'Milk'  # Same base item
+        assert serializer2.data['item_name'] == 'Milk'  # Same base item
+
+    def test_checking_off_duplicate_items_independently(self, authenticated_client, db):
+        """Test that duplicate items can be checked off independently."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+        item = ItemFactory()
+        
+        # Create two instances of same item
+        item1 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            quantity=2,
+            unit='pieces',
+            is_checked=False,
+            added_by=user
+        )
+        item2 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            quantity=5,
+            unit='kg',
+            is_checked=False,
+            added_by=user
+        )
+        
+        # Check off first item
+        url1 = f'/api/grocery-list-items/{item1.id}/toggle_checked/'
+        response1 = authenticated_client.post(url1)
+        assert response1.status_code == status.HTTP_200_OK
+        
+        # Verify first item is checked, second is not
+        item1.refresh_from_db()
+        item2.refresh_from_db()
+        
+        assert item1.is_checked is True
+        assert item2.is_checked is False
+        assert item1.checked_by == user
+        assert item2.checked_by is None
+
+    def test_add_checked_item_again(self, authenticated_client, db):
+        """Test that users can add items again after checking them off."""
+        user = authenticated_client.user
+        category = CategoryFactory()
+        item = ItemFactory(category=category, name='Bread')
+        grocery_list = GroceryListFactory(owner=user)
+        
+        # Create and check off an item
+        checked_item = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            quantity=1,
+            unit='loaf',
+            is_checked=True,
+            checked_by=user,
+            added_by=user
+        )
+        
+        # Add the same item again via API
+        url = f'/api/grocery-lists/{grocery_list.id}/add_item/'
+        data = {
+            'item_id': item.id,
+            'quantity': 2,
+            'unit': 'loaves'
+        }
+        
+        response = authenticated_client.post(url, data, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        
+        # Verify both items exist - one checked, one unchecked
+        items = GroceryListItem.objects.filter(grocery_list=grocery_list, item=item)
+        assert items.count() == 2
+        
+        checked_items = items.filter(is_checked=True)
+        unchecked_items = items.filter(is_checked=False)
+        
+        assert checked_items.count() == 1
+        assert unchecked_items.count() == 1
+        
+        # Verify the new item is unchecked with correct data
+        new_item = unchecked_items.first()
+        assert float(new_item.quantity) == 2.0
+        assert new_item.unit == 'loaves'
+
+    def test_multiple_quantities_same_item(self, authenticated_client, db):
+        """Test adding same item multiple times with different quantities."""
+        user = authenticated_client.user
+        category = CategoryFactory()
+        item = ItemFactory(category=category)
+        grocery_list = GroceryListFactory(owner=user)
+        
+        url = f'/api/grocery-lists/{grocery_list.id}/add_item/'
+        quantities = [1, 2.5, 0.75, 10]
+        
+        # Add same item with different quantities
+        for qty in quantities:
+            data = {
+                'item_id': item.id,
+                'quantity': qty
+            }
+            response = authenticated_client.post(url, data, format='json')
+            assert response.status_code == status.HTTP_201_CREATED
+        
+        # Verify all entries exist with correct quantities
+        items = GroceryListItem.objects.filter(grocery_list=grocery_list, item=item)
+        assert items.count() == len(quantities)
+        
+        db_quantities = sorted([float(gli.quantity) for gli in items])
+        expected_quantities = sorted([float(q) for q in quantities])
+        
+        assert db_quantities == expected_quantities
+
+    def test_duplicate_items_ordering(self, authenticated_client, db):
+        """Test that duplicate items follow proper ordering (unchecked first, then by item name)."""
+        user = authenticated_client.user
+        grocery_list = GroceryListFactory(owner=user)
+        item = ItemFactory(name='Tomatoes')
+        
+        # Create multiple instances - some checked, some not
+        item1 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Cherry Tomatoes',
+            is_checked=False,
+            added_by=user
+        )
+        item2 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Roma Tomatoes',
+            is_checked=True,
+            checked_by=user,
+            added_by=user
+        )
+        item3 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            custom_name='Beefsteak Tomatoes',
+            is_checked=False,
+            added_by=user
+        )
+        
+        # Get items in database order (should follow model's Meta.ordering)
+        items = list(GroceryListItem.objects.filter(grocery_list=grocery_list, item=item))
+        
+        # Unchecked items should come first
+        unchecked_items = [i for i in items if not i.is_checked]
+        checked_items = [i for i in items if i.is_checked]
+        
+        # Should have 2 unchecked, 1 checked
+        assert len(unchecked_items) == 2
+        assert len(checked_items) == 1
+        
+        # Within unchecked items, should be ordered by item name
+        # (Both have same item.name='Tomatoes', so order within unchecked group may vary)
+        for item in unchecked_items:
+            assert not item.is_checked

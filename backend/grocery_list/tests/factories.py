@@ -22,6 +22,7 @@ class CategoryFactory(factory.django.DjangoModelFactory):
     
     class Meta:
         model = Category
+        django_get_or_create = ('name',)
     
     name = factory.Sequence(lambda n: f'category{n}')
     description = factory.Faker('text', max_nb_chars=200)
@@ -59,6 +60,7 @@ class GroceryListItemFactory(factory.django.DjangoModelFactory):
     
     grocery_list = factory.SubFactory(GroceryListFactory)
     item = factory.SubFactory(ItemFactory)
+    custom_name = factory.Faker('word')  # New field
     quantity = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)
     unit = factory.Faker('random_element', elements=('piece', 'kg', 'lb', 'liter'))
     notes = factory.Faker('text', max_nb_chars=50)

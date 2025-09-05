@@ -238,7 +238,7 @@ class TestLogoutEndpoint:
     def test_successful_logout(self, db):
         """Test successful logout with valid token."""
         user = UserFactory()
-        token = Token.objects.create(user=user)
+        token, created = Token.objects.get_or_create(user=user)
         
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')

@@ -359,24 +359,32 @@ class TestGroceryListItemModel:
         assert grocery_list_item in grocery_list.items.all()
         assert grocery_list_item in user.added_items.all()
 
-    def test_grocery_list_item_unique_together_constraint(self, db):
-        """Test that grocery_list and item must be unique together."""
+    def test_grocery_list_item_allows_duplicate_items(self, db):
+        """Test that same item can be added multiple times to same grocery list."""
         grocery_list = GroceryListFactory()
         item = ItemFactory()
         user = UserFactory()
         
-        GroceryListItemFactory(
+        # Create first item
+        item1 = GroceryListItemFactory(
             grocery_list=grocery_list,
             item=item,
+            quantity=2,
             added_by=user
         )
         
-        with pytest.raises(IntegrityError):
-            GroceryListItemFactory(
-                grocery_list=grocery_list,
-                item=item,
-                added_by=user
-            )
+        # Should be able to create another instance of same item
+        item2 = GroceryListItemFactory(
+            grocery_list=grocery_list,
+            item=item,
+            quantity=3,
+            added_by=user
+        )
+        
+        # Both should exist in the database
+        assert GroceryListItem.objects.filter(grocery_list=grocery_list, item=item).count() == 2
+        assert item1.quantity == 2
+        assert item2.quantity == 3
 
     def test_grocery_list_item_same_item_different_lists(self, db):
         """Test that same item can be in different grocery lists."""
@@ -511,3 +519,41 @@ class TestGroceryListItemModel:
         
         assert grocery_list_item.created_at is not None
         assert grocery_list_item.updated_at > original_updated_at
+
+    def test_grocery_list_item_custom_name_can_be_blank(self, db):
+        """Test that custom_name can be blank."""
+        grocery_list_item = GroceryListItemFactory(custom_name='')
+        
+        assert grocery_list_item.custom_name == ''
+
+    def test_grocery_list_item_custom_name_can_be_set(self, db):
+        """Test that custom_name can be set and retrieved."""
+        grocery_list_item = GroceryListItemFactory(custom_name='My Custom Apple')
+        
+        assert grocery_list_item.custom_name == 'My Custom Apple'
+
+    def test_grocery_list_item_custom_name_max_length(self, db):
+        """Test custom_name maximum length constraint."""
+        long_name = 'a' * 201  # Exceeds max_length=200
+        
+        with pytest.raises(ValidationError):
+            grocery_list_item = GroceryListItem(
+                grocery_list=GroceryListFactory(),
+                item=ItemFactory(),
+                custom_name=long_name,
+                added_by=UserFactory()
+            )
+            grocery_list_item.full_clean()
+
+    def test_grocery_list_item_str_with_custom_name(self, db):
+        """Test string representation uses custom_name in display."""
+        item = ItemFactory(name='Apple', default_unit='piece')
+        grocery_list_item = GroceryListItemFactory(
+            item=item,
+            custom_name='Organic Apples',
+            quantity=3,
+            unit='kg'
+        )
+        
+        # Note: __str__ method still uses item.name, but display_name field will use custom_name
+        assert str(grocery_list_item) == '3 kg of Apple'

@@ -285,7 +285,7 @@ class TestGroceryListItemSerializer:
         
         expected_fields = {
             'id', 'grocery_list', 'item', 'item_name', 'item_category',
-            'quantity', 'unit', 'notes', 'is_checked', 'checked_at',
+            'custom_name', 'display_name', 'quantity', 'unit', 'notes', 'is_checked', 'checked_at',
             'checked_by', 'checked_by_username', 'added_by', 'added_by_username',
             'created_at', 'updated_at'
         }
@@ -316,6 +316,86 @@ class TestGroceryListItemSerializer:
         assert grocery_list_item.unit == 'kg'
         assert grocery_list_item.notes == 'Test notes'
         assert grocery_list_item.added_by == user
+
+    def test_grocery_list_item_display_name_with_custom_name(self, db):
+        """Test that display_name returns custom_name when set."""
+        item = ItemFactory(name='Apple')
+        grocery_list_item = GroceryListItemFactory(
+            item=item,
+            custom_name='Organic Red Apples'
+        )
+        serializer = GroceryListItemSerializer(grocery_list_item)
+        
+        assert serializer.data['display_name'] == 'Organic Red Apples'
+        assert serializer.data['item_name'] == 'Apple'  # Original item name still available
+        assert serializer.data['custom_name'] == 'Organic Red Apples'
+
+    def test_grocery_list_item_display_name_fallback_to_item_name(self, db):
+        """Test that display_name falls back to item name when custom_name is empty."""
+        item = ItemFactory(name='Banana')
+        grocery_list_item = GroceryListItemFactory(
+            item=item,
+            custom_name=''  # Empty custom name
+        )
+        serializer = GroceryListItemSerializer(grocery_list_item)
+        
+        assert serializer.data['display_name'] == 'Banana'
+        assert serializer.data['item_name'] == 'Banana'
+        assert serializer.data['custom_name'] == ''
+
+    def test_grocery_list_item_display_name_fallback_to_item_name_when_none(self, db):
+        """Test that display_name falls back to item name when custom_name is None."""
+        # Note: custom_name field doesn't allow None, so this test is conceptual
+        # The display_name method in serializer handles falsy values, including empty string
+        item = ItemFactory(name='Orange')
+        grocery_list_item = GroceryListItemFactory(
+            item=item,
+            custom_name=''  # Use empty string instead of None
+        )
+        
+        serializer = GroceryListItemSerializer(grocery_list_item)
+        
+        assert serializer.data['display_name'] == 'Orange'
+        assert serializer.data['item_name'] == 'Orange'
+        assert serializer.data['custom_name'] == ''
+
+    def test_grocery_list_item_serialization_with_custom_name(self, db):
+        """Test serialization includes custom_name in data."""
+        grocery_list_item = GroceryListItemFactory(
+            custom_name='My Special Item'
+        )
+        serializer = GroceryListItemSerializer(grocery_list_item)
+        
+        data = serializer.data
+        assert 'custom_name' in data
+        assert data['custom_name'] == 'My Special Item'
+        assert 'display_name' in data
+        assert data['display_name'] == 'My Special Item'
+
+    def test_grocery_list_item_deserialization_with_custom_name(self, db):
+        """Test creating grocery list item with custom_name from API data."""
+        grocery_list = GroceryListFactory()
+        item = ItemFactory()
+        user = UserFactory()
+        
+        data = {
+            'grocery_list': grocery_list.id,
+            'item': item.id,
+            'custom_name': 'My Custom Display Name',
+            'quantity': '2.00',
+            'unit': 'pieces',
+            'notes': 'Special notes',
+            'added_by': user.id
+        }
+        
+        serializer = GroceryListItemSerializer(data=data)
+        assert serializer.is_valid()
+        
+        grocery_list_item = serializer.save()
+        assert grocery_list_item.custom_name == 'My Custom Display Name'
+        assert grocery_list_item.quantity == 2.00
+        assert grocery_list_item.unit == 'pieces'
+        assert grocery_list_item.notes == 'Special notes'
 
     def test_grocery_list_item_invalid_data(self, db):
         """Test validation with invalid data."""
