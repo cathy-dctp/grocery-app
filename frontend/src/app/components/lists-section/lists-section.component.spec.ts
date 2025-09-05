@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { ListsSectionComponent } from './lists-section.component';
 import { GroceryListCardComponent } from '../grocery-list-card/grocery-list-card.component';
 import { GroceryList } from '../../models/api.models';
@@ -34,7 +34,8 @@ describe('ListsSectionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonModule, RouterTestingModule, ListsSectionComponent, GroceryListCardComponent],
+      imports: [CommonModule, ListsSectionComponent, GroceryListCardComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListsSectionComponent);

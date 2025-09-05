@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { GroceryListCardComponent } from './grocery-list-card.component';
 import { GroceryList, User } from '../../models/api.models';
 
@@ -22,7 +21,8 @@ describe('GroceryListCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonModule, RouterModule, RouterTestingModule, GroceryListCardComponent],
+      imports: [CommonModule, GroceryListCardComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroceryListCardComponent);

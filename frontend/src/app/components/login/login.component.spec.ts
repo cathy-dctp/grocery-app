@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
@@ -29,9 +28,13 @@ describe('LoginComponent', () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['login']);
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent, RouterTestingModule],
+      imports: [LoginComponent],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
+        provideRouter([
+          { path: 'lists', component: class MockComponent {} },
+          { path: 'register', component: class MockComponent {} },
+        ]),
       ],
     }).compileComponents();
 

@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { AuthService } from '../../services/auth.service';
@@ -10,7 +9,7 @@ describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: Router;
+  let router: Router;
 
   const mockRegisterResponse: RegisterResponse = {
     user: {
@@ -27,12 +26,16 @@ describe('RegisterComponent', () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['register']);
 
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent, RouterTestingModule],
-      providers: [{ provide: AuthService, useValue: authServiceSpy }],
+      imports: [RegisterComponent],
+      providers: [
+        { provide: AuthService, useValue: authServiceSpy },
+        provideRouter([{ path: 'login', component: class MockComponent {} }]),
+      ],
     }).compileComponents();
 
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    mockRouter = TestBed.inject(Router);
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
@@ -82,7 +85,6 @@ describe('RegisterComponent', () => {
     });
 
     it('should register with full data and navigate to lists', () => {
-      spyOn(mockRouter, 'navigate');
       mockAuthService.register.and.returnValue(of(mockRegisterResponse));
 
       component.onSubmit();
@@ -99,7 +101,7 @@ describe('RegisterComponent', () => {
       };
 
       expect(mockAuthService.register).toHaveBeenCalledWith(expectedRequest);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
+      expect(router.navigate).toHaveBeenCalledWith(['/lists']);
     });
 
     it('should register with minimal data (only username and password)', () => {
