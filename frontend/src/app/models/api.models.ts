@@ -40,8 +40,11 @@ export interface GroceryListItem {
   item: number;
   item_name?: string;
   item_category?: string;
+  custom_name?: string;
+  display_name?: string;
   quantity: string;
   unit: string;
+  notes?: string;
   is_checked: boolean;
   added_by: number;
   added_by_username?: string;

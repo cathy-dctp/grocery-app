@@ -12,8 +12,7 @@ import { AutocompleteItem } from '../item-autocomplete/item-autocomplete.compone
   selector: 'app-grocery-list-detail',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, GroceryListItemComponent, ItemFormComponent],
-  templateUrl: './grocery-list-detail.component.html',
-  styleUrl: './grocery-list-detail.component.scss'
+  templateUrl: './grocery-list-detail.component.html'
 })
 export class GroceryListDetailComponent implements OnInit {
   list = signal<GroceryList | null>(null);
@@ -152,15 +151,17 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
   
-  onUpdateItem(data: { id: number; updates: Partial<GroceryListItem> }) {
+  onUpdateItem(data: { id: number; updates: Partial<GroceryListItem>; callback: (success: boolean) => void }) {
     this.groceryService.updateGroceryListItem(data.id, data.updates).subscribe({
       next: (updatedItem) => {
         this.items.update(items => 
           items.map(i => i.id === data.id ? updatedItem : i)
         );
+        data.callback(true);
       },
       error: (err) => {
         this.handleError('Failed to update item', err);
+        data.callback(false);
       }
     });
   }

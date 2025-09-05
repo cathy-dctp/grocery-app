@@ -34,13 +34,18 @@ class GroceryListItemSerializer(serializers.ModelSerializer):
     item_category = serializers.CharField(source='item.category.name', read_only=True)
     added_by_username = serializers.CharField(source='added_by.username', read_only=True)
     checked_by_username = serializers.CharField(source='checked_by.username', read_only=True)
+    display_name = serializers.SerializerMethodField()
     
     class Meta:
         model = GroceryListItem
         fields = ['id', 'grocery_list', 'item', 'item_name', 'item_category', 
-                 'quantity', 'unit', 'notes', 'is_checked', 'checked_at', 
-                 'checked_by', 'checked_by_username', 'added_by', 'added_by_username',
-                 'created_at', 'updated_at']
+                 'custom_name', 'display_name', 'quantity', 'unit', 'notes', 
+                 'is_checked', 'checked_at', 'checked_by', 'checked_by_username', 
+                 'added_by', 'added_by_username', 'created_at', 'updated_at']
+    
+    def get_display_name(self, obj):
+        """Return custom name if set, otherwise fall back to item name"""
+        return obj.custom_name if obj.custom_name else obj.item.name
 
 # Simplified serializers for list views (without nested data)
 class GroceryListSimpleSerializer(serializers.ModelSerializer):

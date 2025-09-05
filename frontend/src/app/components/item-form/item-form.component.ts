@@ -72,7 +72,7 @@ export class ItemFormComponent {
       
       this.addItem.emit({
         selectedItem: null,
-        quantity: '1',
+        quantity: this.itemQuantity(),
         unit: this.newItemUnit(),
         newItem: {
           name: this.newItemName().trim(),

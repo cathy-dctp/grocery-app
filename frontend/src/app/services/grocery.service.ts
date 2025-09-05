@@ -110,7 +110,7 @@ export class GroceryService {
   }
 
   updateGroceryListItem(id: number, item: Partial<GroceryListItem>): Observable<GroceryListItem> {
-    return this.http.put<GroceryListItem>(`${this.apiUrl}/grocery-list-items/${id}/`, item);
+    return this.http.patch<GroceryListItem>(`${this.apiUrl}/grocery-list-items/${id}/`, item);
   }
 
   deleteGroceryListItem(id: number): Observable<void> {

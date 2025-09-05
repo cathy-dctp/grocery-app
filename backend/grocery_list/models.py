@@ -51,6 +51,7 @@ class GroceryList(models.Model):
 class GroceryListItem(models.Model):
     grocery_list = models.ForeignKey(GroceryList, on_delete=models.CASCADE, related_name='items')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    custom_name = models.CharField(max_length=200, blank=True, help_text="Custom name for this item in this list")
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     unit = models.CharField(max_length=20, blank=True)
     notes = models.TextField(blank=True)
