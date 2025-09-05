@@ -52,20 +52,15 @@ class GroceryListViewSet(viewsets.ModelViewSet):
 
         try:
             item = Item.objects.get(id=item_id)
-            grocery_list_item, created = GroceryListItem.objects.get_or_create(
+            # Always create a new grocery list item, even if the same item already exists
+            grocery_list_item = GroceryListItem.objects.create(
                 grocery_list=grocery_list,
                 item=item,
-                defaults={
-                    'quantity': quantity,
-                    'unit': unit or item.default_unit,
-                    'notes': notes,
-                    'added_by': request.user
-                }
+                quantity=quantity,
+                unit=unit or item.default_unit,
+                notes=notes,
+                added_by=request.user
             )
-            
-            if not created:
-                grocery_list_item.quantity += Decimal(quantity)
-                grocery_list_item.save()
 
             serializer = GroceryListItemSerializer(grocery_list_item)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

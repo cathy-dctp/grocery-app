@@ -88,7 +88,7 @@ export class GroceryListDetailComponent implements OnInit {
       this.createNewItemAndAdd(formData.newItem, formData.quantity, formData.unit);
     } else if (formData.selectedItem) {
       // Add existing item to list
-      this.addExistingItemToList(formData.selectedItem, formData.quantity, formData.unit);
+      this.addItemToList(formData.selectedItem.id, formData.quantity, formData.unit);
     }
   }
   
@@ -100,30 +100,7 @@ export class GroceryListDetailComponent implements OnInit {
     }).subscribe({
       next: (createdItem) => {
         // Now add the created item to the list
-        this.groceryService.addItemToList(
-          this.listId,
-          createdItem.id,
-          quantity,
-          unit || createdItem.default_unit
-        ).subscribe({
-          next: (listItem) => {
-            this.items.update(items => {
-              const existingIndex = items.findIndex(item => item.id === listItem.id);
-              if (existingIndex >= 0) {
-                const updated = [...items];
-                updated[existingIndex] = listItem;
-                return updated;
-              } else {
-                return [listItem, ...items];
-              }
-            });
-            this.isProcessing.set(false);
-          },
-          error: (err) => {
-            this.handleError('Failed to add item to list', err);
-            this.isProcessing.set(false);
-          }
-        });
+        this.addItemToList(createdItem.id, quantity, unit || createdItem.default_unit);
       },
       error: (err) => {
         this.handleError('Failed to create new item', err);
@@ -132,24 +109,16 @@ export class GroceryListDetailComponent implements OnInit {
     });
   }
   
-  private addExistingItemToList(item: AutocompleteItem, quantity: string, unit: string) {
+  private addItemToList(itemId: number, quantity: string, unit: string) {
     this.groceryService.addItemToList(
       this.listId,
-      item.id,
+      itemId,
       quantity,
-      unit || item.default_unit
+      unit
     ).subscribe({
       next: (listItem) => {
-        this.items.update(items => {
-          const existingIndex = items.findIndex(item => item.id === listItem.id);
-          if (existingIndex >= 0) {
-            const updated = [...items];
-            updated[existingIndex] = listItem;
-            return updated;
-          } else {
-            return [listItem, ...items];
-          }
-        });
+        // Always add as new item since backend now creates unique entries
+        this.items.update(items => [listItem, ...items]);
         this.isProcessing.set(false);
       },
       error: (err) => {

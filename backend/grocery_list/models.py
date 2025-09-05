@@ -63,7 +63,6 @@ class GroceryListItem(models.Model):
 
     class Meta:
         ordering = ['is_checked', 'item__name']
-        unique_together = [['grocery_list', 'item']]
 
     def __str__(self):
         return f"{self.quantity} {self.unit or self.item.default_unit} of {self.item.name}"

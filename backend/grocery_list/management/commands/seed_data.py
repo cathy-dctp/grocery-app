@@ -142,17 +142,15 @@ class Command(BaseCommand):
         ]
 
         for list_item_data in list_items_data:
-            list_item, created = GroceryListItem.objects.get_or_create(
+            # Always create new items since we removed uniqueness constraint
+            list_item = GroceryListItem.objects.create(
                 grocery_list=list_item_data['list'],
                 item=items[list_item_data['item']],
-                defaults={
-                    'quantity': list_item_data['quantity'],
-                    'added_by': list_item_data['added_by'],
-                    'notes': f"Added to {list_item_data['list'].name}"
-                }
+                quantity=list_item_data['quantity'],
+                added_by=list_item_data['added_by'],
+                notes=f"Added to {list_item_data['list'].name}"
             )
-            if created:
-                self.stdout.write(f'Added {list_item.item.name} to {list_item.grocery_list.name}')
+            self.stdout.write(f'Added {list_item.item.name} to {list_item.grocery_list.name}')
 
         # Mark some items as checked
         checked_items = GroceryListItem.objects.filter(
