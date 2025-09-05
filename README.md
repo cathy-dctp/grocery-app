@@ -47,52 +47,9 @@ The app will be running at [http://localhost:8000](http://localhost:8000)
 
 ### Option 2: Local Development Setup
 
-**Prerequisites**
+For local development with separate frontend/backend servers, see detailed instructions in:
 
-- **Node.js 18+** and npm - [Download here](https://nodejs.org/)
-- **Python 3.11+** - [Download here](https://www.python.org/downloads/)
-
-**Backend Setup**
-
-```bash
-# Clone repository
-git clone https://github.com/cathy-dctp/grocery-app.git
-cd grocery-app
-
-# Run Docker for database
-docker-compose up db -d
-
-# Set up Python virtual environment
-cd backend
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# (Optional) Migrate if any new migrations
-python manage.py migrate
-
-# Start backend server
-python manage.py runserver 0.0.0.0:8000
-```
-
-**Frontend Setup** (in a new terminal)
-
-```bash
-cd grocery-app/frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-```
-
-**Access the application:**
-
-- Frontend: [http://localhost:4200](http://localhost:4200)
-- Backend API: [http://localhost:8000/api](http://localhost:8000/api)
+**📖 [Development Guide - Option 2](DEV_GUIDE.md#option-2-local-development-setup)**
 
 ### API Documentation
 
@@ -225,7 +182,7 @@ This project was built with the help of generated AI as a learning accelerator a
 
 ## Testing
 
-- CI/CD pipeline setup on Github https://github.com/cathy-dctp/grocery-app/actions
+CI/CD pipeline setup on Github https://github.com/cathy-dctp/grocery-app/actions
 
 **Backend Testing** (Django TestCase, Factory Boy)
 
@@ -249,9 +206,17 @@ Note: Cypress is not working fully due to time constraint
 cd frontend && npm run e2e
 ```
 
+## Code Quality & Linting
+
+The project uses ESLint + Prettier (frontend) and Flake8 + Black + isort (backend) for code quality.
+
+For detailed linting and formatting commands, see:
+
+**📖 [Development Guide - Code Quality](DEV_GUIDE.md#code-quality--linting)**
+
 ## Known Issues & Future Enhancements
 
 For current limitations, known issues, and planned feature enhancements, see:
 
 **[Known Issues & Wishlist Features](DISCUSSIONS.md)**
----
+

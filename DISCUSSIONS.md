@@ -29,6 +29,7 @@
 - **Keyboard Shortcuts**: Implement keyboard navigation and shortcuts for managing lists and items (accessibility enhancement)
 - **UI Feedback & Notifications**: Add toast notifications and loading states for creating/editing/deleting items and lists
 - **Category Filtering**: Show/hide items by category on grocery lists
+- **Additional Item Info Display**: Assign items to user for purchasing + display item added by username
 - **Collapsible Sections**: Allow users to collapse or hide checked-off/bought items for cleaner view
 - **Bulk Operations**: Select multiple items for batch delete, check-off, or category changes
 - **Mobile UI Improvements**
