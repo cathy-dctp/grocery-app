@@ -453,7 +453,10 @@ describe('GroceryListsComponent', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       mockGroceryService.deleteGroceryList.and.returnValue(of(undefined as any));
 
-      component.deleteList({ listId: 1, event: { stopPropagation: () => {}, preventDefault: () => {} } as Event });
+      component.deleteList({
+        listId: 1,
+        event: { stopPropagation: () => {}, preventDefault: () => {} } as Event,
+      });
 
       expect(component.lists().length).toBe(1);
       expect(component.lists()[0].id).toBe(2);

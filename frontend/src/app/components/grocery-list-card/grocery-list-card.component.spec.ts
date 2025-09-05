@@ -17,17 +17,12 @@ describe('GroceryListCardComponent', () => {
     owner: 1,
     owner_username: 'testuser',
     shared_with: [],
-    item_count: 5
+    item_count: 5,
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        CommonModule,
-        RouterModule,
-        RouterTestingModule,
-        GroceryListCardComponent
-      ]
+      imports: [CommonModule, RouterModule, RouterTestingModule, GroceryListCardComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroceryListCardComponent);
@@ -48,7 +43,7 @@ describe('GroceryListCardComponent', () => {
   it('should emit shareClicked event when share button is clicked', () => {
     component.isOwned = true;
     fixture.detectChanges();
-    
+
     spyOn(component.shareClicked, 'emit');
     const mockEvent = new Event('click');
 
@@ -56,14 +51,14 @@ describe('GroceryListCardComponent', () => {
 
     expect(component.shareClicked.emit).toHaveBeenCalledWith({
       list: mockGroceryList,
-      event: mockEvent
+      event: mockEvent,
     });
   });
 
   it('should emit deleteClicked event when delete button is clicked', () => {
     component.isOwned = true;
     fixture.detectChanges();
-    
+
     spyOn(component.deleteClicked, 'emit');
     const mockEvent = new Event('click');
 
@@ -71,7 +66,7 @@ describe('GroceryListCardComponent', () => {
 
     expect(component.deleteClicked.emit).toHaveBeenCalledWith({
       listId: mockGroceryList.id,
-      event: mockEvent
+      event: mockEvent,
     });
   });
 
@@ -84,7 +79,13 @@ describe('GroceryListCardComponent', () => {
   it('should display shared user names', () => {
     const users: User[] = [
       { id: 1, username: 'user1', first_name: 'John', last_name: 'Doe', email: 'john@example.com' },
-      { id: 2, username: 'user2', first_name: 'Jane', last_name: 'Smith', email: 'jane@example.com' }
+      {
+        id: 2,
+        username: 'user2',
+        first_name: 'Jane',
+        last_name: 'Smith',
+        email: 'jane@example.com',
+      },
     ];
 
     const result = component.getSharedWithNames(users);

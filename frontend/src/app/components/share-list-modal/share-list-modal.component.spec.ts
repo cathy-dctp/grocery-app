@@ -54,10 +54,10 @@ describe('ShareListModalComponent', () => {
     }).compileComponents();
 
     mockGroceryService = TestBed.inject(GroceryService) as jasmine.SpyObj<GroceryService>;
-    
+
     // Set default return value for searchUsers to prevent RxJS errors
     mockGroceryService.searchUsers.and.returnValue(of({ count: 0, results: [] }));
-    
+
     fixture = TestBed.createComponent(ShareListModalComponent);
     component = fixture.componentInstance;
 

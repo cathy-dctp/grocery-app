@@ -18,7 +18,7 @@ describe('ListsSectionComponent', () => {
       owner: 1,
       owner_username: 'testuser',
       shared_with: [],
-      item_count: 5
+      item_count: 5,
     },
     {
       id: 2,
@@ -28,18 +28,13 @@ describe('ListsSectionComponent', () => {
       owner: 1,
       owner_username: 'testuser',
       shared_with: [],
-      item_count: 3
-    }
+      item_count: 3,
+    },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        CommonModule,
-        RouterTestingModule,
-        ListsSectionComponent,
-        GroceryListCardComponent
-      ]
+      imports: [CommonModule, RouterTestingModule, ListsSectionComponent, GroceryListCardComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListsSectionComponent);

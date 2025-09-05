@@ -13,7 +13,7 @@ export class GroceryListCardComponent {
   @Input({ required: true }) list!: GroceryList;
   @Input() isOwned = true;
   @Input() currentUserId: number | null = null;
-  
+
   @Output() shareClicked = new EventEmitter<{ list: GroceryList; event: Event }>();
   @Output() deleteClicked = new EventEmitter<{ listId: number; event: Event }>();
 

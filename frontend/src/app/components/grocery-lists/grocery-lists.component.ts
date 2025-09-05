@@ -11,7 +11,13 @@ import { ListsSectionComponent } from '../lists-section/lists-section.component'
 @Component({
   selector: 'app-grocery-lists',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ShareListModalComponent, ListsSectionComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ShareListModalComponent,
+    ListsSectionComponent,
+  ],
   templateUrl: './grocery-lists.component.html',
 })
 export class GroceryListsComponent implements OnInit {
@@ -29,11 +35,11 @@ export class GroceryListsComponent implements OnInit {
 
   // Computed signals for owned and shared lists
   ownedLists = computed(() => {
-    return this.lists().filter(list => list.owner === this.currentUser?.id);
+    return this.lists().filter((list) => list.owner === this.currentUser?.id);
   });
 
   sharedLists = computed(() => {
-    return this.lists().filter(list => list.owner !== this.currentUser?.id);
+    return this.lists().filter((list) => list.owner !== this.currentUser?.id);
   });
 
   constructor(

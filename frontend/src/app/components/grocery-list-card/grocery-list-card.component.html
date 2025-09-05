@@ -1,7 +1,10 @@
 <div
   [attr.data-cy]="isOwned ? 'grocery-list-item' : 'grocery-list-item-shared'"
   [routerLink]="['/lists', list.id]"
-  [class]="'bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer group hover:-translate-y-1 animate-scale-in' + (isOwned ? '' : ' border-l-4 border-secondary-400')"
+  [class]="
+    'bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer group hover:-translate-y-1 animate-scale-in' +
+    (isOwned ? '' : ' border-l-4 border-secondary-400')
+  "
 >
   <div class="p-6">
     <!-- List Header -->
@@ -27,7 +30,7 @@
           </div>
         }
       </div>
-      
+
       <!-- Action buttons (only for owned lists) -->
       @if (isOwned) {
         <div class="flex items-center space-x-1">
@@ -106,9 +109,7 @@
       <!-- Shared Info for owned lists -->
       @if (list.shared_with && list.shared_with.length) {
         <div class="flex items-center space-x-2 text-xs">
-          <div
-            class="flex items-center px-2 py-1 bg-secondary-100 text-secondary-700 rounded-full"
-          >
+          <div class="flex items-center px-2 py-1 bg-secondary-100 text-secondary-700 rounded-full">
             <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
@@ -127,7 +128,9 @@
     } @else {
       <!-- Shared badge for shared lists -->
       <div class="flex items-center justify-end">
-        <div class="flex items-center px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-xs">
+        <div
+          class="flex items-center px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-xs"
+        >
           <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
