@@ -306,5 +306,96 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
    pip install -r requirements.txt
    ```
 
+## Railway Production Database Management
+
+### Cleaning and Reseeding Railway PostgreSQL Database
+
+The Railway production database can be cleaned and reseeded with fresh test data when needed (e.g., after development changes or for testing purposes).
+
+#### Prerequisites
+- [Railway CLI](https://docs.railway.app/develop/cli) installed
+- Railway project linked (`railway status` should show your project)
+
+#### Database Reset Process
+
+**1. Connect to Railway Service**
+```bash
+railway ssh
+```
+This opens an SSH connection directly to the Railway service container where Django is running.
+
+**2. Clean the Database (Remove all data)**
+```bash
+python manage.py flush --noinput
+```
+This command removes all data from all tables while preserving the database schema. The `--noinput` flag skips confirmation prompts.
+
+**3. Apply Database Migrations**
+```bash
+python manage.py migrate
+```
+Ensures the database schema is up-to-date with any pending migrations.
+
+**4. Seed with Fresh Test Data**
+```bash
+python manage.py seed_data
+```
+Populates the database with sample data including:
+- Test users: `admin/admin123`, `john_doe/password123`, `jane_smith/password123`
+- Categories: Produce, Dairy, Meat, etc.
+- Sample grocery items and lists
+
+**5. Verify Results (Optional)**
+```bash
+python manage.py shell -c "
+from django.contrib.auth.models import User
+from grocery_list.models import Category, Item, GroceryList, GroceryListItem
+print(f'Users: {User.objects.count()}')
+print(f'Categories: {Category.objects.count()}') 
+print(f'Items: {Item.objects.count()}')
+print(f'Grocery Lists: {GroceryList.objects.count()}')
+print(f'List Items: {GroceryListItem.objects.count()}')
+"
+```
+
+#### Alternative: Direct Commands (without SSH session)
+```bash
+# Run individual commands directly
+railway run python manage.py flush --noinput
+railway run python manage.py migrate  
+railway run python manage.py seed_data
+
+# Or chain them together
+railway run "python manage.py flush --noinput && python manage.py migrate && python manage.py seed_data"
+```
+
+#### When to Reset the Database
+- After major data model changes
+- To clear corrupted test data
+- For fresh testing environment
+- Before important demos or presentations
+- After development cycles that modify sample data
+
+#### Important Notes
+- **Data Loss**: This process permanently deletes ALL production data
+- **Downtime**: The app may be briefly unavailable during the reset
+- **Test Data**: Only use this on development/staging environments
+- **Logging**: Railway logs will show the reset process and seed data creation
+
+#### Test Users After Reset
+| Username | Password | Role | Sample Data |
+|----------|----------|------|-------------|
+| `admin` | `admin123` | Superuser | Admin access |
+| `john_doe` | `password123` | Regular user | Sample grocery lists |
+| `jane_smith` | `password123` | Regular user | Sample grocery lists |
+
+#### Troubleshooting
+- If `railway ssh` fails, ensure you're logged in: `railway login`
+- If database connection fails, check Railway service status: `railway status`
+- For permission issues, verify your Railway project access
+- If SSH connection is refused, wait for the service to be fully deployed
+
+---
+
 ## CI/CD Pipeline
 View pipeline status: [GitHub Actions](https://github.com/cathy-dctp/grocery-app/actions)
