@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
-import { LoginRequest, LoginResponse, AuthUser } from '../models/api.models';
+import { LoginRequest, LoginResponse, AuthUser, RegisterRequest, RegisterResponse } from '../models/api.models';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -309,6 +309,106 @@ describe('AuthService', () => {
       const req = httpMock.expectOne((request) => request.url.includes('/api/auth/login/'));
       expect(req.request.method).toBe('POST');
       req.flush(mockLoginResponse);
+    });
+  });
+
+  describe('Registration Functionality', () => {
+    const mockRegisterRequest: RegisterRequest = {
+      username: 'newuser',
+      password: 'password123',
+      email: 'new@example.com',
+      first_name: 'New',
+      last_name: 'User',
+    };
+
+    const mockRegisterResponse: RegisterResponse = {
+      user: {
+        id: 2,
+        username: 'newuser',
+        email: 'new@example.com',
+        first_name: 'New',
+        last_name: 'User',
+      },
+      token: 'new-user-token-123',
+    };
+
+    it('should register successfully and store user data', () => {
+      service.register(mockRegisterRequest).subscribe((response) => {
+        expect(response).toEqual(mockRegisterResponse);
+
+        expect(service.getCurrentUser()).toEqual({ ...mockRegisterResponse.user, token: 'new-user-token-123' });
+        expect(service.isAuthenticated()).toBe(true);
+
+        expect(localStorage.getItem('currentUser')).toBe(JSON.stringify(mockRegisterResponse.user));
+        expect(localStorage.getItem('authToken')).toBe('new-user-token-123');
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/auth/register/');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(mockRegisterRequest);
+
+      req.flush(mockRegisterResponse);
+    });
+
+    it('should register with minimal data', () => {
+      const minimalRequest: RegisterRequest = {
+        username: 'minimaluser',
+        password: 'password123',
+      };
+
+      const minimalResponse: RegisterResponse = {
+        user: {
+          id: 3,
+          username: 'minimaluser',
+          email: '',
+          first_name: '',
+          last_name: '',
+        },
+        token: 'minimal-user-token',
+      };
+
+      service.register(minimalRequest).subscribe((response) => {
+        expect(response).toEqual(minimalResponse);
+        expect(service.isAuthenticated()).toBe(true);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/auth/register/');
+      expect(req.request.body).toEqual(minimalRequest);
+
+      req.flush(minimalResponse);
+    });
+
+    it('should handle registration errors correctly', () => {
+      const errorResponse = {
+        error: { error: 'Username already exists' },
+        status: 400,
+      };
+
+      service.register(mockRegisterRequest).subscribe({
+        next: () => fail('Registration should have failed'),
+        error: (error) => {
+          expect(error.error.error).toBe('Username already exists');
+          expect(service.getCurrentUser()).toBeNull();
+          expect(service.isAuthenticated()).toBe(false);
+        },
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/auth/register/');
+      req.flush(errorResponse.error, { status: errorResponse.status, statusText: 'Bad Request' });
+    });
+
+    it('should handle registration network errors', () => {
+      service.register(mockRegisterRequest).subscribe({
+        next: () => fail('Registration should have failed'),
+        error: (error) => {
+          expect(error).toBeDefined();
+          expect(service.getCurrentUser()).toBeNull();
+          expect(service.isAuthenticated()).toBe(false);
+        },
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/auth/register/');
+      req.error(new ErrorEvent('Network error'));
     });
   });
 });

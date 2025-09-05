@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, of, map } from 'rxjs';
-import { AuthUser, LoginRequest, LoginResponse } from '../models/api.models';
+import { AuthUser, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/api.models';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +53,22 @@ export class AuthService {
       }),
       catchError((error) => {
         console.error('Login error:', error);
+        throw error;
+      })
+    );
+  }
+
+  register(userData: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register/`, userData).pipe(
+      tap((response) => {
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        localStorage.setItem('authToken', response.token);
+        const userWithToken = { ...response.user, token: response.token };
+        this.currentUserSubject.next(userWithToken);
+        this.isAuthenticated.set(true);
+      }),
+      catchError((error) => {
+        console.error('Registration error:', error);
         throw error;
       })
     );

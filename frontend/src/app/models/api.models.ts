@@ -80,3 +80,16 @@ export interface LoginResponse {
   user: AuthUser;
   token: string;
 }
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+export interface RegisterResponse {
+  user: AuthUser;
+  token: string;
+}
