@@ -2,8 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ItemFormComponent, ItemFormData } from './item-form.component';
-import { ItemAutocompleteComponent, AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
-import { CategorySelectComponent } from '../category-select/category-select.component';
+import { AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
 import { GroceryService } from '../../services/grocery.service';
 import { Category } from '../../models/api.models';
 import { of } from 'rxjs';
@@ -13,16 +12,26 @@ describe('ItemFormComponent', () => {
   let fixture: ComponentFixture<ItemFormComponent>;
 
   const mockCategories: Category[] = [
-    { id: 1, name: 'Produce', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
-    { id: 2, name: 'Dairy', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
-    { id: 3, name: 'Meat', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' }
+    {
+      id: 1,
+      name: 'Produce',
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+    },
+    {
+      id: 2,
+      name: 'Dairy',
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+    },
+    { id: 3, name: 'Meat', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
   ];
 
   const mockAutocompleteItem: AutocompleteItem = {
     id: 1,
     name: 'Apples',
     category_name: 'Produce',
-    default_unit: 'lb'
+    default_unit: 'lb',
   };
 
   beforeEach(async () => {
@@ -31,9 +40,7 @@ describe('ItemFormComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ItemFormComponent, FormsModule, HttpClientTestingModule],
-      providers: [
-        { provide: GroceryService, useValue: mockGroceryService }
-      ]
+      providers: [{ provide: GroceryService, useValue: mockGroceryService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ItemFormComponent);
@@ -117,7 +124,7 @@ describe('ItemFormComponent', () => {
 
     it('should handle create new item with empty categories', () => {
       component.categories = [];
-      
+
       component.onCreateNewItem('New Item');
 
       expect(component.selectedCategoryId()).toBe(0);
@@ -176,7 +183,7 @@ describe('ItemFormComponent', () => {
       const expectedData: ItemFormData = {
         selectedItem: mockAutocompleteItem,
         quantity: '2',
-        unit: 'bags'
+        unit: 'bags',
       };
       expect(component.addItem.emit).toHaveBeenCalledWith(expectedData);
     });
@@ -198,8 +205,8 @@ describe('ItemFormComponent', () => {
         newItem: {
           name: 'Custom Item',
           categoryId: 2,
-          unit: 'kg'
-        }
+          unit: 'kg',
+        },
       };
       expect(component.addItem.emit).toHaveBeenCalledWith(expectedData);
     });
@@ -264,8 +271,8 @@ describe('ItemFormComponent', () => {
         newItem: {
           name: 'Trimmed Item',
           categoryId: 1,
-          unit: 'pcs'
-        }
+          unit: 'pcs',
+        },
       };
       expect(component.addItem.emit).toHaveBeenCalledWith(expectedData);
     });
@@ -454,7 +461,7 @@ describe('ItemFormComponent', () => {
       expect(component.addItem.emit).toHaveBeenCalledWith({
         selectedItem: mockAutocompleteItem,
         quantity: '3',
-        unit: 'bags'
+        unit: 'bags',
       });
     });
 
@@ -483,8 +490,8 @@ describe('ItemFormComponent', () => {
         newItem: {
           name: 'Custom Vegetable',
           categoryId: 1,
-          unit: 'bunches'
-        }
+          unit: 'bunches',
+        },
       });
     });
 

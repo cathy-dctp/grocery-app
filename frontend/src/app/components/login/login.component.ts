@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
 })
 export class LoginComponent {
   username = '';
@@ -30,31 +30,33 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    this.authService.login({ 
-      username: this.username.trim(), 
-      password: this.password.trim() 
-    }).subscribe({
-      next: (response) => {
-        try {
-          console.log('Login successful:', response.user.username);
+    this.authService
+      .login({
+        username: this.username.trim(),
+        password: this.password.trim(),
+      })
+      .subscribe({
+        next: (response) => {
+          try {
+            console.log('Login successful:', response.user.username);
+            this.loading.set(false);
+            this.router.navigate(['/lists']);
+          } catch (error) {
+            console.error('Login failed:', error);
+            this.loading.set(false);
+            this.error.set('Login failed. Please try again.');
+          }
+        },
+        error: (err) => {
+          console.error('Login failed:', err);
           this.loading.set(false);
-          this.router.navigate(['/lists']);
-        } catch (error) {
-          console.error('Login failed:', error);
-          this.loading.set(false);
-          this.error.set('Login failed. Please try again.');
-        }
-      },
-      error: (err) => {
-        console.error('Login failed:', err);
-        this.loading.set(false);
-        if (err.status === 401) {
-          this.error.set('Invalid username or password');
-        } else {
-          this.error.set('Login failed. Please try again.');
-        }
-      }
-    });
+          if (err.status === 401) {
+            this.error.set('Invalid username or password');
+          } else {
+            this.error.set('Login failed. Please try again.');
+          }
+        },
+      });
   }
 
   // Demo login buttons for testing

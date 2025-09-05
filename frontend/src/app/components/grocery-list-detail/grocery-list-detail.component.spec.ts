@@ -3,7 +3,13 @@ import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { GroceryListDetailComponent } from './grocery-list-detail.component';
 import { GroceryService } from '../../services/grocery.service';
-import { GroceryList, GroceryListItem, Item, Category, PaginatedResponse } from '../../models/api.models';
+import {
+  GroceryList,
+  GroceryListItem,
+  Item,
+  Category,
+  PaginatedResponse,
+} from '../../models/api.models';
 import { ItemFormData } from '../item-form/item-form.component';
 import { AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
 
@@ -20,7 +26,7 @@ describe('GroceryListDetailComponent', () => {
     updated_at: '2023-01-01T00:00:00Z',
     owner: 1,
     shared_with: [],
-    item_count: 5
+    item_count: 5,
   };
 
   const mockGroceryListItems: GroceryListItem[] = [
@@ -39,7 +45,7 @@ describe('GroceryListDetailComponent', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
       added_by: 1,
-      checked_by: undefined
+      checked_by: undefined,
     },
     {
       id: 2,
@@ -56,51 +62,67 @@ describe('GroceryListDetailComponent', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
       added_by: 1,
-      checked_by: 1
-    }
+      checked_by: 1,
+    },
   ];
 
   const mockCategories: Category[] = [
-    { id: 1, name: 'Fruits', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' },
-    { id: 2, name: 'Dairy', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' },
-    { id: 3, name: 'Vegetables', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' }
-  ];
-
-  const mockItems: Item[] = [
     {
       id: 1,
-      name: 'Apples',
-      category: 1,
-      category_name: 'Fruits',
-      default_unit: 'lbs',
+      name: 'Fruits',
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z'
-    }
+      updated_at: '2023-01-01T00:00:00Z',
+    },
+    {
+      id: 2,
+      name: 'Dairy',
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    },
+    {
+      id: 3,
+      name: 'Vegetables',
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    },
   ];
+
+  // Commented out for now - can be used for future tests
+  // const mockItems: Item[] = [
+  //   {
+  //     id: 1,
+  //     name: 'Apples',
+  //     category: 1,
+  //     category_name: 'Fruits',
+  //     default_unit: 'lbs',
+  //     created_at: '2023-01-01T00:00:00Z',
+  //     updated_at: '2023-01-01T00:00:00Z',
+  //   },
+  // ];
 
   beforeEach(async () => {
     mockGroceryService = jasmine.createSpyObj('GroceryService', [
       'getGroceryList',
-      'getGroceryListItems', 
+      'getGroceryListItems',
       'getCategories',
       'createItem',
       'addItemToList',
       'createCategory',
       'toggleItemChecked',
       'updateGroceryListItem',
-      'deleteGroceryListItem'
+      'deleteGroceryListItem',
     ]);
 
     mockActivatedRoute = {
-      params: of({ id: '1' })
+      params: of({ id: '1' }),
     } as any;
 
     await TestBed.configureTestingModule({
       imports: [GroceryListDetailComponent],
       providers: [
         { provide: GroceryService, useValue: mockGroceryService },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute }
-      ]
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroceryListDetailComponent);
@@ -108,18 +130,22 @@ describe('GroceryListDetailComponent', () => {
 
     // Setup default successful responses
     mockGroceryService.getGroceryList.and.returnValue(of(mockGroceryList));
-    mockGroceryService.getGroceryListItems.and.returnValue(of({
-      count: 2,
-      next: undefined,
-      previous: undefined,
-      results: mockGroceryListItems
-    } as PaginatedResponse<GroceryListItem>));
-    mockGroceryService.getCategories.and.returnValue(of({
-      count: 3,
-      next: undefined,
-      previous: undefined,
-      results: mockCategories
-    } as PaginatedResponse<Category>));
+    mockGroceryService.getGroceryListItems.and.returnValue(
+      of({
+        count: 2,
+        next: undefined,
+        previous: undefined,
+        results: mockGroceryListItems,
+      } as PaginatedResponse<GroceryListItem>)
+    );
+    mockGroceryService.getCategories.and.returnValue(
+      of({
+        count: 3,
+        next: undefined,
+        previous: undefined,
+        results: mockCategories,
+      } as PaginatedResponse<Category>)
+    );
   });
 
   afterEach(() => {
@@ -237,15 +263,15 @@ describe('GroceryListDetailComponent', () => {
         const newItem = {
           name: 'Bananas',
           categoryId: 1,
-          unit: 'bunch'
+          unit: 'bunch',
         };
         const formData: ItemFormData = {
           newItem,
           selectedItem: null,
           quantity: '3',
-          unit: 'bunch'
+          unit: 'bunch',
         };
-        
+
         const createdItem: Item = {
           id: 3,
           name: 'Bananas',
@@ -253,7 +279,7 @@ describe('GroceryListDetailComponent', () => {
           category_name: 'Fruits',
           default_unit: 'bunch',
           created_at: '2023-01-01T00:00:00Z',
-          updated_at: '2023-01-01T00:00:00Z'
+          updated_at: '2023-01-01T00:00:00Z',
         };
 
         const addedListItem: GroceryListItem = {
@@ -271,7 +297,7 @@ describe('GroceryListDetailComponent', () => {
           created_at: '2023-01-01T00:00:00Z',
           updated_at: '2023-01-01T00:00:00Z',
           added_by: 1,
-          checked_by: undefined
+          checked_by: undefined,
         };
 
         mockGroceryService.createItem.and.returnValue(of(createdItem));
@@ -282,7 +308,7 @@ describe('GroceryListDetailComponent', () => {
         expect(mockGroceryService.createItem).toHaveBeenCalledWith({
           name: 'Bananas',
           category: 1,
-          default_unit: 'bunch'
+          default_unit: 'bunch',
         });
         expect(mockGroceryService.addItemToList).toHaveBeenCalledWith(1, 3, '3', 'bunch');
         expect(component.items()).toEqual([addedListItem]);
@@ -293,13 +319,13 @@ describe('GroceryListDetailComponent', () => {
         const newItem = {
           name: 'Bananas',
           categoryId: 1,
-          unit: 'bunch'
+          unit: 'bunch',
         };
         const formData: ItemFormData = {
           newItem,
           selectedItem: null,
           quantity: '3',
-          unit: 'bunch'
+          unit: 'bunch',
         };
 
         const error = { status: 400, error: { name: ['Item already exists'] } };
@@ -310,7 +336,9 @@ describe('GroceryListDetailComponent', () => {
         component.onItemFormSubmit(formData);
 
         expect(component.isProcessing()).toBe(false);
-        expect(window.alert).toHaveBeenCalledWith('Failed to create new item:\nItem already exists');
+        expect(window.alert).toHaveBeenCalledWith(
+          'Failed to create new item:\nItem already exists'
+        );
         expect(console.error).toHaveBeenCalledWith('Failed to create new item:', error);
       });
     });
@@ -321,13 +349,13 @@ describe('GroceryListDetailComponent', () => {
           id: 1,
           name: 'Apples',
           category_name: 'Fruits',
-          default_unit: 'lbs'
+          default_unit: 'lbs',
         };
         const formData: ItemFormData = {
           newItem: undefined,
           selectedItem,
           quantity: '5',
-          unit: 'lbs'
+          unit: 'lbs',
         };
 
         const addedListItem: GroceryListItem = {
@@ -345,7 +373,7 @@ describe('GroceryListDetailComponent', () => {
           created_at: '2023-01-01T00:00:00Z',
           updated_at: '2023-01-01T00:00:00Z',
           added_by: 1,
-          checked_by: undefined
+          checked_by: undefined,
         };
 
         mockGroceryService.addItemToList.and.returnValue(of(addedListItem));
@@ -362,13 +390,13 @@ describe('GroceryListDetailComponent', () => {
           id: 1,
           name: 'Apples',
           category_name: 'Fruits',
-          default_unit: 'lbs'
+          default_unit: 'lbs',
         };
         const formData: ItemFormData = {
           newItem: undefined,
           selectedItem,
           quantity: '5',
-          unit: 'lbs'
+          unit: 'lbs',
         };
 
         const error = { status: 500, message: 'Server error' };
@@ -387,7 +415,12 @@ describe('GroceryListDetailComponent', () => {
 
   describe('Category Management', () => {
     it('should create new category', () => {
-      const newCategory: Category = { id: 4, name: 'Snacks', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
+      const newCategory: Category = {
+        id: 4,
+        name: 'Snacks',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
       mockGroceryService.createCategory.and.returnValue(of(newCategory));
 
       component.categories.set(mockCategories);
@@ -405,7 +438,9 @@ describe('GroceryListDetailComponent', () => {
 
       component.onCreateNewCategory('Snacks');
 
-      expect(window.alert).toHaveBeenCalledWith('Failed to create category:\nCategory already exists');
+      expect(window.alert).toHaveBeenCalledWith(
+        'Failed to create category:\nCategory already exists'
+      );
       expect(console.error).toHaveBeenCalledWith('Failed to create category:', error);
     });
   });
@@ -521,8 +556,8 @@ describe('GroceryListDetailComponent', () => {
           status: 400,
           error: {
             name: ['This field is required', 'Name must be unique'],
-            category: ['Invalid category']
-          }
+            category: ['Invalid category'],
+          },
         };
 
         component['handleError']('Failed to create item', error);
@@ -537,8 +572,8 @@ describe('GroceryListDetailComponent', () => {
         const error = {
           status: 400,
           error: {
-            detail: 'Invalid request data'
-          }
+            detail: 'Invalid request data',
+          },
         };
 
         component['handleError']('Operation failed', error);
@@ -549,7 +584,7 @@ describe('GroceryListDetailComponent', () => {
       it('should handle non-400 errors with generic message', () => {
         const error = {
           status: 500,
-          message: 'Internal server error'
+          message: 'Internal server error',
         };
 
         component['handleError']('Server error', error);
@@ -559,7 +594,7 @@ describe('GroceryListDetailComponent', () => {
       });
 
       it('should handle errors without status', () => {
-        const error = { message: 'Network error' };
+        const error = { status: 0, error: { message: 'Network error' } };
 
         component['handleError']('Connection failed', error);
 
@@ -585,7 +620,7 @@ describe('GroceryListDetailComponent', () => {
         created_at: '2023-01-01T00:00:00Z',
         updated_at: '2023-01-01T00:00:00Z',
         added_by: 1,
-        checked_by: undefined
+        checked_by: undefined,
       };
 
       component.items.set([mockGroceryListItems[0]]);
@@ -595,7 +630,7 @@ describe('GroceryListDetailComponent', () => {
         newItem: undefined,
         selectedItem: { id: 5, name: 'Oranges', category_name: 'Fruits', default_unit: 'pieces' },
         quantity: '4',
-        unit: 'pieces'
+        unit: 'pieces',
       };
 
       component.onItemFormSubmit(formData);
@@ -604,7 +639,12 @@ describe('GroceryListDetailComponent', () => {
     });
 
     it('should update categories signal when creating new category', () => {
-      const newCategory: Category = { id: 5, name: 'Beverages', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
+      const newCategory: Category = {
+        id: 5,
+        name: 'Beverages',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
       component.categories.set([mockCategories[0]]);
       mockGroceryService.createCategory.and.returnValue(of(newCategory));
 
@@ -615,16 +655,16 @@ describe('GroceryListDetailComponent', () => {
 
     it('should maintain signal reactivity across operations', () => {
       component.items.set(mockGroceryListItems);
-      
+
       // Test that signal updates are reflected
       expect(component.items().length).toBe(2);
-      
+
       // Simulate item deletion
       spyOn(window, 'confirm').and.returnValue(true);
       mockGroceryService.deleteGroceryListItem.and.returnValue(of(undefined as any));
-      
+
       component.onDeleteItem(1);
-      
+
       expect(component.items().length).toBe(1);
       expect(component.items()[0].id).toBe(2);
     });
@@ -637,11 +677,11 @@ describe('GroceryListDetailComponent', () => {
         newItem: {
           name: 'Test Item',
           categoryId: 1,
-          unit: 'pieces'
+          unit: 'pieces',
         },
         selectedItem: null,
         quantity: '2',
-        unit: 'pieces'
+        unit: 'pieces',
       };
 
       const createdItem: Item = {
@@ -651,7 +691,7 @@ describe('GroceryListDetailComponent', () => {
         category_name: 'Fruits',
         default_unit: 'pieces',
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       };
 
       const addedListItem: GroceryListItem = {
@@ -669,7 +709,7 @@ describe('GroceryListDetailComponent', () => {
         created_at: '2023-01-01T00:00:00Z',
         updated_at: '2023-01-01T00:00:00Z',
         added_by: 1,
-        checked_by: undefined
+        checked_by: undefined,
       };
 
       mockGroceryService.createItem.and.returnValue(of(createdItem));
@@ -680,7 +720,7 @@ describe('GroceryListDetailComponent', () => {
       expect(mockGroceryService.createItem).toHaveBeenCalledWith({
         name: 'Test Item',
         category: 1,
-        default_unit: 'pieces'
+        default_unit: 'pieces',
       });
       expect(mockGroceryService.addItemToList).toHaveBeenCalledWith(1, 10, '2', 'pieces');
     });
@@ -695,7 +735,7 @@ describe('GroceryListDetailComponent', () => {
       component.onUpdateItem({
         id: 1,
         updates: { quantity: '5' },
-        callback
+        callback,
       });
 
       expect(mockGroceryService.updateGroceryListItem).toHaveBeenCalledWith(1, { quantity: '5' });

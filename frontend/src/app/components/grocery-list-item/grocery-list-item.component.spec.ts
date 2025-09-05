@@ -22,12 +22,12 @@ describe('GroceryListItemComponent', () => {
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
     added_by: 1,
-    checked_by: undefined
+    checked_by: undefined,
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GroceryListItemComponent, FormsModule]
+      imports: [GroceryListItemComponent, FormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroceryListItemComponent);
@@ -130,7 +130,9 @@ describe('GroceryListItemComponent', () => {
       component.ngOnInit();
       fixture.detectChanges();
 
-      const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      const checkbox = fixture.nativeElement.querySelector(
+        'input[type="checkbox"]'
+      ) as HTMLInputElement;
       checkbox.click();
 
       expect(component.toggleChecked.emit).toHaveBeenCalledWith(component.item);
@@ -141,7 +143,9 @@ describe('GroceryListItemComponent', () => {
       component.ngOnInit();
       fixture.detectChanges();
 
-      const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      const checkbox = fixture.nativeElement.querySelector(
+        'input[type="checkbox"]'
+      ) as HTMLInputElement;
       expect(checkbox.checked).toBe(true);
     });
   });
@@ -153,7 +157,9 @@ describe('GroceryListItemComponent', () => {
     });
 
     it('should enter edit mode when edit button is clicked', () => {
-      const editButton = fixture.nativeElement.querySelector('button[title="Edit item"]') as HTMLButtonElement;
+      const editButton = fixture.nativeElement.querySelector(
+        'button[title="Edit item"]'
+      ) as HTMLButtonElement;
       editButton.click();
 
       expect(component.isEditing()).toBe(true);
@@ -172,10 +178,14 @@ describe('GroceryListItemComponent', () => {
       component.isEditing.set(true);
       fixture.detectChanges();
 
-      const customNameInput = fixture.nativeElement.querySelector('input[placeholder="Custom name (optional)"]');
+      const customNameInput = fixture.nativeElement.querySelector(
+        'input[placeholder="Custom name (optional)"]'
+      );
       const quantityInput = fixture.nativeElement.querySelector('input[placeholder="Quantity"]');
       const unitInput = fixture.nativeElement.querySelector('input[placeholder="Unit"]');
-      const notesTextarea = fixture.nativeElement.querySelector('textarea[placeholder="Additional notes (optional)"]');
+      const notesTextarea = fixture.nativeElement.querySelector(
+        'textarea[placeholder="Additional notes (optional)"]'
+      );
 
       expect(customNameInput).toBeTruthy();
       expect(quantityInput).toBeTruthy();
@@ -187,10 +197,12 @@ describe('GroceryListItemComponent', () => {
       component.isEditing.set(true);
       fixture.detectChanges();
 
-      const saveButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find(btn => 
-                          (btn as HTMLButtonElement).textContent?.includes('Save'));
-      const cancelButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find(btn => 
-                            (btn as HTMLButtonElement).textContent?.includes('Cancel'));
+      const saveButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find((btn) =>
+        (btn as HTMLButtonElement).textContent?.includes('Save')
+      );
+      const cancelButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find(
+        (btn) => (btn as HTMLButtonElement).textContent?.includes('Cancel')
+      );
 
       expect(saveButton).toBeTruthy();
       expect(cancelButton).toBeTruthy();
@@ -206,7 +218,7 @@ describe('GroceryListItemComponent', () => {
     it('should require quantity field', () => {
       spyOn(window, 'alert');
       component.editingQuantity.set('');
-      
+
       component.saveChanges();
 
       expect(window.alert).toHaveBeenCalledWith('Quantity is required');
@@ -228,15 +240,15 @@ describe('GroceryListItemComponent', () => {
           custom_name: 'Custom Name',
           quantity: '3',
           unit: 'cups',
-          notes: 'Some notes'
+          notes: 'Some notes',
         },
-        callback: jasmine.any(Function)
+        callback: jasmine.any(Function),
       });
     });
 
     it('should not emit update if no fields changed', () => {
       spyOn(component.updateItem, 'emit');
-      
+
       component.saveChanges();
 
       expect(component.updateItem.emit).not.toHaveBeenCalled();
@@ -252,7 +264,7 @@ describe('GroceryListItemComponent', () => {
 
     it('should emit updateItem event with correct data when saving', () => {
       spyOn(component.updateItem, 'emit');
-      
+
       component.editingCustomName.set('Updated Name');
       component.editingQuantity.set('5');
       component.editingUnit.set('pieces');
@@ -266,9 +278,9 @@ describe('GroceryListItemComponent', () => {
           custom_name: 'Updated Name',
           quantity: '5',
           unit: 'pieces',
-          notes: 'Updated notes'
+          notes: 'Updated notes',
         },
-        callback: jasmine.any(Function)
+        callback: jasmine.any(Function),
       });
     });
 
@@ -307,7 +319,7 @@ describe('GroceryListItemComponent', () => {
 
     it('should send undefined for empty custom_name to clear the field', () => {
       spyOn(component.updateItem, 'emit');
-      
+
       component.editingCustomName.set('');
       component.editingQuantity.set('5');
 
@@ -319,7 +331,7 @@ describe('GroceryListItemComponent', () => {
 
     it('should send empty string for notes when cleared', () => {
       spyOn(component.updateItem, 'emit');
-      
+
       component.editingNotes.set('');
       component.editingQuantity.set('5');
 
@@ -340,8 +352,9 @@ describe('GroceryListItemComponent', () => {
       component.isEditing.set(true);
       fixture.detectChanges();
 
-      const cancelButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find(btn => 
-        (btn as HTMLButtonElement).textContent?.includes('Cancel')) as HTMLButtonElement;
+      const cancelButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find(
+        (btn) => (btn as HTMLButtonElement).textContent?.includes('Cancel')
+      ) as HTMLButtonElement;
       cancelButton.click();
 
       expect(component.isEditing()).toBe(false);
@@ -369,7 +382,9 @@ describe('GroceryListItemComponent', () => {
       component.ngOnInit();
       fixture.detectChanges();
 
-      const deleteButton = fixture.nativeElement.querySelector('button[title="Remove from list"]') as HTMLButtonElement;
+      const deleteButton = fixture.nativeElement.querySelector(
+        'button[title="Remove from list"]'
+      ) as HTMLButtonElement;
       deleteButton.click();
 
       expect(component.deleteItem.emit).toHaveBeenCalledWith(1);
@@ -385,7 +400,7 @@ describe('GroceryListItemComponent', () => {
     it('should disable form inputs when saving', async () => {
       component.isEditing.set(true);
       fixture.detectChanges();
-      
+
       component.isSaving.set(true);
       fixture.detectChanges();
       await fixture.whenStable();
@@ -403,8 +418,12 @@ describe('GroceryListItemComponent', () => {
       fixture.detectChanges();
 
       const buttons = fixture.nativeElement.querySelectorAll('button');
-      const saveButton = Array.from(buttons).find(btn => (btn as HTMLButtonElement).textContent?.includes('Saving')) as HTMLButtonElement;
-      const cancelButton = Array.from(buttons).find(btn => (btn as HTMLButtonElement).textContent?.includes('Cancel')) as HTMLButtonElement;
+      const saveButton = Array.from(buttons).find((btn) =>
+        (btn as HTMLButtonElement).textContent?.includes('Saving')
+      ) as HTMLButtonElement;
+      const cancelButton = Array.from(buttons).find((btn) =>
+        (btn as HTMLButtonElement).textContent?.includes('Cancel')
+      ) as HTMLButtonElement;
 
       expect(saveButton?.disabled).toBe(true);
       expect(cancelButton?.disabled).toBe(true);
@@ -416,8 +435,9 @@ describe('GroceryListItemComponent', () => {
       fixture.detectChanges();
 
       const spinner = fixture.nativeElement.querySelector('.animate-spin');
-      const savingText = Array.from(fixture.nativeElement.querySelectorAll('button')).find(btn => 
-        (btn as HTMLButtonElement).textContent?.includes('Saving'));
+      const savingText = Array.from(fixture.nativeElement.querySelectorAll('button')).find((btn) =>
+        (btn as HTMLButtonElement).textContent?.includes('Saving')
+      );
 
       expect(spinner).toBeTruthy();
       expect(savingText).toBeTruthy();
@@ -441,7 +461,7 @@ describe('GroceryListItemComponent', () => {
         created_at: '2023-01-01T00:00:00Z',
         updated_at: '2023-01-01T00:00:00Z',
         added_by: 1,
-        checked_by: undefined
+        checked_by: undefined,
       };
 
       component.item = minimalItem;
@@ -453,11 +473,11 @@ describe('GroceryListItemComponent', () => {
     });
 
     it('should handle empty string fields gracefully', () => {
-      component.item = { 
-        ...mockItem, 
-        custom_name: '', 
+      component.item = {
+        ...mockItem,
+        custom_name: '',
         notes: '',
-        display_name: ''
+        display_name: '',
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -473,20 +493,22 @@ describe('GroceryListItemComponent', () => {
       fixture.detectChanges();
 
       expect(component.isEditing()).toBe(false);
-      
+
       component.isEditing.set(true);
       fixture.detectChanges();
 
-      const editForm = fixture.nativeElement.querySelector('input[placeholder="Custom name (optional)"]');
+      const editForm = fixture.nativeElement.querySelector(
+        'input[placeholder="Custom name (optional)"]'
+      );
       expect(editForm).toBeTruthy();
     });
 
     it('should maintain signal state consistency', () => {
       component.ngOnInit();
-      
+
       component.startEditing();
       expect(component.isEditing()).toBe(true);
-      
+
       component.cancelEditing();
       expect(component.isEditing()).toBe(false);
       expect(component.isSaving()).toBe(false);

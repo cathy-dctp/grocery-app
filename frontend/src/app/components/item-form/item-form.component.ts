@@ -2,7 +2,10 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Category } from '../../models/api.models';
-import { ItemAutocompleteComponent, AutocompleteItem } from '../item-autocomplete/item-autocomplete.component';
+import {
+  ItemAutocompleteComponent,
+  AutocompleteItem,
+} from '../item-autocomplete/item-autocomplete.component';
 import { CategorySelectComponent } from '../category-select/category-select.component';
 
 export interface ItemFormData {
@@ -20,11 +23,11 @@ export interface ItemFormData {
   selector: 'app-item-form',
   standalone: true,
   imports: [CommonModule, FormsModule, ItemAutocompleteComponent, CategorySelectComponent],
-  templateUrl: './item-form.component.html'
+  templateUrl: './item-form.component.html',
 })
 export class ItemFormComponent {
   @Input({ required: true }) categories: Category[] = [];
-  
+
   @Output() addItem = new EventEmitter<ItemFormData>();
   @Output() createNewCategory = new EventEmitter<string>();
   @Output() clearForm = new EventEmitter<void>();
@@ -32,7 +35,7 @@ export class ItemFormComponent {
   selectedItem = signal<AutocompleteItem | null>(null);
   itemQuantity = signal('1');
   itemUnit = signal('');
-  
+
   // New item creation
   isCreatingNewItem = signal(false);
   newItemName = signal('');
@@ -69,7 +72,7 @@ export class ItemFormComponent {
       if (!this.newItemName().trim() || this.selectedCategoryId() === 0) {
         return;
       }
-      
+
       this.addItem.emit({
         selectedItem: null,
         quantity: this.itemQuantity(),
@@ -77,15 +80,15 @@ export class ItemFormComponent {
         newItem: {
           name: this.newItemName().trim(),
           categoryId: this.selectedCategoryId(),
-          unit: this.newItemUnit()
-        }
+          unit: this.newItemUnit(),
+        },
       });
     } else if (this.selectedItem()) {
       // Add existing item
       this.addItem.emit({
         selectedItem: this.selectedItem()!,
         quantity: this.itemQuantity(),
-        unit: this.itemUnit()
+        unit: this.itemUnit(),
       });
     }
   }

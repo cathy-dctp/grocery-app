@@ -16,12 +16,12 @@ describe('LoginComponent', () => {
     username: 'testuser',
     email: 'test@example.com',
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
   };
 
   const mockLoginResponse: LoginResponse = {
     user: mockUser,
-    token: 'fake-jwt-token-12345'
+    token: 'fake-jwt-token-12345',
   };
 
   beforeEach(async () => {
@@ -32,8 +32,8 @@ describe('LoginComponent', () => {
       imports: [LoginComponent],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
-      ]
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -124,14 +124,14 @@ describe('LoginComponent', () => {
     it('should trim whitespace from username and password', () => {
       component.username = '  testuser  ';
       component.password = '  password123  ';
-      
+
       mockAuthService.login.and.returnValue(of(mockLoginResponse));
 
       component.onSubmit();
 
       expect(mockAuthService.login).toHaveBeenCalledWith({
         username: 'testuser',
-        password: 'password123'
+        password: 'password123',
       });
     });
   });
@@ -152,7 +152,7 @@ describe('LoginComponent', () => {
       expect(component.error()).toBeNull();
       expect(mockAuthService.login).toHaveBeenCalledWith({
         username: 'testuser',
-        password: 'password123'
+        password: 'password123',
       });
       expect(console.log).toHaveBeenCalledWith('Login successful:', 'testuser');
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
@@ -249,7 +249,7 @@ describe('LoginComponent', () => {
 
         expect(mockAuthService.login).toHaveBeenCalledWith({
           username: 'john_doe',
-          password: 'password123'
+          password: 'password123',
         });
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
       });
@@ -275,7 +275,7 @@ describe('LoginComponent', () => {
 
         expect(mockAuthService.login).toHaveBeenCalledWith({
           username: 'jane_smith',
-          password: 'password123'
+          password: 'password123',
         });
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
       });
@@ -323,7 +323,7 @@ describe('LoginComponent', () => {
 
       usernameInput.value = 'newuser';
       usernameInput.dispatchEvent(new Event('input'));
-      
+
       passwordInput.value = 'newpassword';
       passwordInput.dispatchEvent(new Event('input'));
 
@@ -361,7 +361,8 @@ describe('LoginComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      const errorElement = compiled.querySelector('.error') || compiled.querySelector('[class*="error"]');
+      const errorElement =
+        compiled.querySelector('.error') || compiled.querySelector('[class*="error"]');
 
       expect(errorElement?.textContent).toContain('Test error message');
     });
@@ -417,7 +418,7 @@ describe('LoginComponent', () => {
 
       expect(mockAuthService.login).toHaveBeenCalledWith({
         username: longString,
-        password: longString
+        password: longString,
       });
     });
   });

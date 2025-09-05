@@ -8,14 +8,24 @@ describe('CategorySelectComponent', () => {
   let fixture: ComponentFixture<CategorySelectComponent>;
 
   const mockCategories: Category[] = [
-    { id: 1, name: 'Produce', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
-    { id: 2, name: 'Dairy', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
-    { id: 3, name: 'Meat', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' }
+    {
+      id: 1,
+      name: 'Produce',
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+    },
+    {
+      id: 2,
+      name: 'Dairy',
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+    },
+    { id: 3, name: 'Meat', created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z' },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CategorySelectComponent, FormsModule]
+      imports: [CategorySelectComponent, FormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CategorySelectComponent);
@@ -227,7 +237,7 @@ describe('CategorySelectComponent', () => {
 
     it('should react to signal changes in template logic', () => {
       component.customCategoryName.set('Valid Name');
-      
+
       // This simulates the template condition [disabled]="!customCategoryName().trim()"
       expect(component.customCategoryName().trim().length > 0).toBe(true);
 
@@ -316,7 +326,7 @@ describe('CategorySelectComponent', () => {
 
       // Should have placeholder + categories + create new option
       expect(options.length).toBe(mockCategories.length + 2);
-      
+
       // Check some key options exist
       expect(options[0].textContent).toContain('Select a category');
       expect(options[1].textContent).toBe('Produce');
@@ -331,9 +341,6 @@ describe('CategorySelectComponent', () => {
     });
 
     it('should hide custom input initially', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const customInput = compiled.querySelector('input[type="text"]');
-
       expect(component.showCustomCategoryInput()).toBe(false);
       // Custom input should not be in DOM when hidden
     });
@@ -342,9 +349,6 @@ describe('CategorySelectComponent', () => {
       component.required = true;
       component.selectedCategoryId = 0;
       fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      const select = compiled.querySelector('select');
 
       // This would be checked in a more complete DOM test
       expect(component.selectedCategoryId).toBe(0);
@@ -355,7 +359,7 @@ describe('CategorySelectComponent', () => {
   describe('Edge Cases', () => {
     it('should handle empty categories array', () => {
       component.categories = [];
-      
+
       spyOn(component.categoryChanged, 'emit');
       component.onCategoryChange('1');
 
@@ -440,7 +444,7 @@ describe('CategorySelectComponent', () => {
   describe('Event Emissions', () => {
     it('should emit categoryChanged with correct data types', () => {
       let emittedValue: any;
-      component.categoryChanged.subscribe(value => {
+      component.categoryChanged.subscribe((value) => {
         emittedValue = value;
       });
 
@@ -452,7 +456,7 @@ describe('CategorySelectComponent', () => {
 
     it('should emit createNewCategory with correct data types', () => {
       let emittedValue: any;
-      component.createNewCategory.subscribe(value => {
+      component.createNewCategory.subscribe((value) => {
         emittedValue = value;
       });
 
@@ -469,7 +473,7 @@ describe('CategorySelectComponent', () => {
 
       // This should not emit categoryChanged
       component.onCategoryChange('-1');
-      
+
       // This should not emit createNewCategory
       component.customCategoryName.set('');
       component.onCreateCategory();

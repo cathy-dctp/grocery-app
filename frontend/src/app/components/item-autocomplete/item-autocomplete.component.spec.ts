@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { of } from 'rxjs';
 import { ItemAutocompleteComponent, AutocompleteItem } from './item-autocomplete.component';
 import { GroceryService } from '../../services/grocery.service';
 import { Item, PaginatedResponse } from '../../models/api.models';
@@ -12,40 +12,40 @@ describe('ItemAutocompleteComponent', () => {
   let mockGroceryService: jasmine.SpyObj<GroceryService>;
 
   const mockItems: Item[] = [
-    { 
-      id: 1, 
-      name: 'Apples', 
-      category: 1, 
-      category_name: 'Produce', 
+    {
+      id: 1,
+      name: 'Apples',
+      category: 1,
+      category_name: 'Produce',
       default_unit: 'lb',
       created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-01-15T10:00:00Z'
+      updated_at: '2024-01-15T10:00:00Z',
     },
-    { 
-      id: 2, 
-      name: 'Apple Juice', 
-      category: 2, 
-      category_name: 'Beverages', 
+    {
+      id: 2,
+      name: 'Apple Juice',
+      category: 2,
+      category_name: 'Beverages',
       default_unit: 'bottle',
       created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-01-15T10:00:00Z'
+      updated_at: '2024-01-15T10:00:00Z',
     },
-    { 
-      id: 3, 
-      name: 'Banana', 
-      category: 1, 
-      category_name: 'Produce', 
+    {
+      id: 3,
+      name: 'Banana',
+      category: 1,
+      category_name: 'Produce',
       default_unit: 'bunch',
       created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-01-15T10:00:00Z'
-    }
+      updated_at: '2024-01-15T10:00:00Z',
+    },
   ];
 
   const mockSearchResponse: PaginatedResponse<Item> = {
     count: 2,
     next: undefined,
     previous: undefined,
-    results: mockItems.slice(0, 2) // First 2 items
+    results: mockItems.slice(0, 2), // First 2 items
   };
 
   beforeEach(async () => {
@@ -60,7 +60,7 @@ describe('ItemAutocompleteComponent', () => {
           count: 1,
           next: undefined,
           previous: undefined,
-          results: [mockItems[0]] // Exact match
+          results: [mockItems[0]], // Exact match
         });
       } else {
         return of(mockSearchResponse); // Default response
@@ -69,9 +69,7 @@ describe('ItemAutocompleteComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ItemAutocompleteComponent, ReactiveFormsModule, HttpClientTestingModule],
-      providers: [
-        { provide: GroceryService, useValue: mockGroceryService }
-      ]
+      providers: [{ provide: GroceryService, useValue: mockGroceryService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ItemAutocompleteComponent);
@@ -126,7 +124,7 @@ describe('ItemAutocompleteComponent', () => {
 
     it('should set suggestions manually for testing', () => {
       const testSuggestions: AutocompleteItem[] = [
-        { id: 1, name: 'Test Item', category_name: 'Test Category', default_unit: 'pcs' }
+        { id: 1, name: 'Test Item', category_name: 'Test Category', default_unit: 'pcs' },
       ];
 
       component.suggestions.set(testSuggestions);
@@ -142,7 +140,7 @@ describe('ItemAutocompleteComponent', () => {
       // Set up test suggestions manually instead of relying on async search
       const testSuggestions: AutocompleteItem[] = [
         { id: 1, name: 'Apples', category_name: 'Produce', default_unit: 'lb' },
-        { id: 2, name: 'Apple Juice', category_name: 'Beverages', default_unit: 'bottle' }
+        { id: 2, name: 'Apple Juice', category_name: 'Beverages', default_unit: 'bottle' },
       ];
       component.suggestions.set(testSuggestions);
       component.showDropdown.set(true);
@@ -250,7 +248,7 @@ describe('ItemAutocompleteComponent', () => {
       // Set up test suggestions manually
       const testSuggestions: AutocompleteItem[] = [
         { id: 1, name: 'Apples', category_name: 'Produce', default_unit: 'lb' },
-        { id: 2, name: 'Apple Juice', category_name: 'Beverages', default_unit: 'bottle' }
+        { id: 2, name: 'Apple Juice', category_name: 'Beverages', default_unit: 'bottle' },
       ];
       component.suggestions.set(testSuggestions);
       component.showDropdown.set(true);
@@ -267,17 +265,19 @@ describe('ItemAutocompleteComponent', () => {
 
     it('should emit createNewItem for create new items', () => {
       spyOn(component.createNewItem, 'emit');
-      const createNewItem = { 
-        id: -1, 
-        name: 'Create "new item"', 
-        category_name: 'New Item', 
-        default_unit: '', 
-        isCreateNew: true 
+      const createNewItem = {
+        id: -1,
+        name: 'Create "new item"',
+        category_name: 'New Item',
+        default_unit: '',
+        isCreateNew: true,
       };
 
       component.selectItem(createNewItem);
 
-      expect(component.createNewItem.emit).toHaveBeenCalledWith(component.searchControl.value || '');
+      expect(component.createNewItem.emit).toHaveBeenCalledWith(
+        component.searchControl.value || ''
+      );
       expect(component.showDropdown()).toBe(false);
     });
 
@@ -309,7 +309,7 @@ describe('ItemAutocompleteComponent', () => {
   describe('Signal State Management', () => {
     it('should update suggestions signal', () => {
       const newSuggestions: AutocompleteItem[] = [
-        { id: 1, name: 'Test', category_name: 'Category', default_unit: 'pcs' }
+        { id: 1, name: 'Test', category_name: 'Category', default_unit: 'pcs' },
       ];
 
       component.suggestions.set(newSuggestions);
@@ -356,7 +356,7 @@ describe('ItemAutocompleteComponent', () => {
       component.suggestions.set([]);
 
       const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-      
+
       expect(() => component.onKeyDown(event)).not.toThrow();
       expect(component.selectedIndex()).toBe(0); // Wraps to 0 even with empty array
     });
@@ -365,7 +365,7 @@ describe('ItemAutocompleteComponent', () => {
   describe('Event Emissions', () => {
     it('should emit itemSelected with correct data type', () => {
       let emittedItem: any;
-      component.itemSelected.subscribe(item => {
+      component.itemSelected.subscribe((item) => {
         emittedItem = item;
       });
 
@@ -373,7 +373,7 @@ describe('ItemAutocompleteComponent', () => {
         id: 1,
         name: 'Test Item',
         category_name: 'Test Category',
-        default_unit: 'pcs'
+        default_unit: 'pcs',
       };
 
       component.selectItem(testItem);
@@ -385,17 +385,17 @@ describe('ItemAutocompleteComponent', () => {
 
     it('should emit createNewItem with correct data type', () => {
       let emittedValue: any;
-      component.createNewItem.subscribe(value => {
+      component.createNewItem.subscribe((value) => {
         emittedValue = value;
       });
 
       component.searchControl.setValue('new item');
-      const createNewItem = { 
-        id: -1, 
-        name: 'Create "new item"', 
-        category_name: 'New Item', 
-        default_unit: '', 
-        isCreateNew: true 
+      const createNewItem = {
+        id: -1,
+        name: 'Create "new item"',
+        category_name: 'New Item',
+        default_unit: '',
+        isCreateNew: true,
       };
 
       component.selectItem(createNewItem);

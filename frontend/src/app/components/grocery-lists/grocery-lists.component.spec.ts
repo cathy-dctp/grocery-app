@@ -18,7 +18,7 @@ describe('GroceryListsComponent', () => {
     username: 'testuser',
     email: 'test@example.com',
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
   };
 
   const mockSharedUser: User = {
@@ -26,7 +26,7 @@ describe('GroceryListsComponent', () => {
     username: 'shareduser',
     email: 'shared@example.com',
     first_name: 'Shared',
-    last_name: 'User'
+    last_name: 'User',
   };
 
   const mockGroceryList: GroceryList = {
@@ -36,7 +36,7 @@ describe('GroceryListsComponent', () => {
     shared_with: [mockSharedUser],
     item_count: 5,
     created_at: '2024-01-15T10:30:00Z',
-    updated_at: '2024-01-15T11:00:00Z'
+    updated_at: '2024-01-15T11:00:00Z',
   };
 
   const mockGroceryListsResponse: PaginatedResponse<GroceryList> = {
@@ -52,22 +52,22 @@ describe('GroceryListsComponent', () => {
         shared_with: [],
         item_count: 3,
         created_at: '2024-01-14T09:15:00Z',
-        updated_at: '2024-01-14T09:30:00Z'
-      }
-    ]
+        updated_at: '2024-01-14T09:30:00Z',
+      },
+    ],
   };
 
   beforeEach(async () => {
     mockGroceryService = jasmine.createSpyObj('GroceryService', [
       'getGroceryLists',
       'createGroceryList',
-      'deleteGroceryList'
+      'deleteGroceryList',
     ]);
     mockAuthService = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'logout']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     const mockActivatedRoute = {
-      snapshot: { params: {} }
+      snapshot: { params: {} },
     };
 
     await TestBed.configureTestingModule({
@@ -76,8 +76,8 @@ describe('GroceryListsComponent', () => {
         { provide: GroceryService, useValue: mockGroceryService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute }
-      ]
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroceryListsComponent);
@@ -166,7 +166,7 @@ describe('GroceryListsComponent', () => {
         shared_with: [],
         item_count: 0,
         created_at: '2024-01-16T10:00:00Z',
-        updated_at: '2024-01-16T10:00:00Z'
+        updated_at: '2024-01-16T10:00:00Z',
       };
       component.lists.set([mockGroceryList]);
       component.newListName = 'New List';
@@ -219,7 +219,7 @@ describe('GroceryListsComponent', () => {
         shared_with: [],
         item_count: 0,
         created_at: '2024-01-16T10:00:00Z',
-        updated_at: '2024-01-16T10:00:00Z'
+        updated_at: '2024-01-16T10:00:00Z',
       };
       component.newListName = '  Trimmed List  ';
       mockGroceryService.createGroceryList.and.returnValue(of(newList));
@@ -299,7 +299,7 @@ describe('GroceryListsComponent', () => {
 
   describe('Logout', () => {
     it('should logout successfully and navigate to login', () => {
-      mockAuthService.logout.and.returnValue(of(undefined));
+      mockAuthService.logout.and.returnValue(of(null));
 
       component.logout();
 
@@ -323,7 +323,13 @@ describe('GroceryListsComponent', () => {
     it('should get shared with names from users with first names', () => {
       const users: User[] = [
         { id: 1, username: 'user1', email: 'user1@test.com', first_name: 'John', last_name: 'Doe' },
-        { id: 2, username: 'user2', email: 'user2@test.com', first_name: 'Jane', last_name: 'Smith' }
+        {
+          id: 2,
+          username: 'user2',
+          email: 'user2@test.com',
+          first_name: 'Jane',
+          last_name: 'Smith',
+        },
       ];
 
       const result = component.getSharedWithNames(users);
@@ -334,7 +340,7 @@ describe('GroceryListsComponent', () => {
     it('should get shared with names from users without first names', () => {
       const users: User[] = [
         { id: 1, username: 'user1', email: 'user1@test.com', first_name: '', last_name: 'Doe' },
-        { id: 2, username: 'user2', email: 'user2@test.com', first_name: '', last_name: 'Smith' }
+        { id: 2, username: 'user2', email: 'user2@test.com', first_name: '', last_name: 'Smith' },
       ];
 
       const result = component.getSharedWithNames(users);
@@ -345,7 +351,7 @@ describe('GroceryListsComponent', () => {
     it('should get shared with names from mixed users', () => {
       const users: User[] = [
         { id: 1, username: 'user1', email: 'user1@test.com', first_name: 'John', last_name: 'Doe' },
-        { id: 2, username: 'user2', email: 'user2@test.com', first_name: '', last_name: 'Smith' }
+        { id: 2, username: 'user2', email: 'user2@test.com', first_name: '', last_name: 'Smith' },
       ];
 
       const result = component.getSharedWithNames(users);
@@ -378,9 +384,6 @@ describe('GroceryListsComponent', () => {
     });
 
     it('should display user welcome message', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const welcomeSpan = compiled.querySelector('span');
-      
       expect(component.currentUser).toEqual(mockUser);
       // DOM testing would require more complex setup - testing the logic is sufficient
       // We verify the currentUser is set correctly, which drives the template display
@@ -388,18 +391,18 @@ describe('GroceryListsComponent', () => {
 
     it('should toggle new list form when button clicked', () => {
       expect(component.showNewListForm).toBe(false);
-      
+
       component.showNewListForm = !component.showNewListForm;
-      
+
       expect(component.showNewListForm).toBe(true);
     });
 
     it('should call createList when form submitted', () => {
       spyOn(component, 'createList');
       component.newListName = 'Test List';
-      
+
       component.createList();
-      
+
       expect(component.createList).toHaveBeenCalled();
     });
 
@@ -436,9 +439,9 @@ describe('GroceryListsComponent', () => {
         shared_with: [],
         item_count: 0,
         created_at: '2024-01-16T10:00:00Z',
-        updated_at: '2024-01-16T10:00:00Z'
+        updated_at: '2024-01-16T10:00:00Z',
       };
-      
+
       component.lists.set([initialList]);
       component.newListName = 'New List';
       mockGroceryService.createGroceryList.and.returnValue(of(newList));
@@ -494,7 +497,7 @@ describe('GroceryListsComponent', () => {
         count: 0,
         next: undefined,
         previous: undefined,
-        results: []
+        results: [],
       };
       mockGroceryService.getGroceryLists.and.returnValue(of(emptyResponse));
 
@@ -508,7 +511,7 @@ describe('GroceryListsComponent', () => {
     it('should handle lists with no shared users', () => {
       const listWithoutSharing: GroceryList = {
         ...mockGroceryList,
-        shared_with: []
+        shared_with: [],
       };
 
       const names = component.getSharedWithNames(listWithoutSharing.shared_with);
@@ -525,7 +528,7 @@ describe('GroceryListsComponent', () => {
         shared_with: [],
         item_count: 0,
         created_at: '2024-01-16T10:00:00Z',
-        updated_at: '2024-01-16T10:00:00Z'
+        updated_at: '2024-01-16T10:00:00Z',
       };
       component.newListName = longName;
       mockGroceryService.createGroceryList.and.returnValue(of(newList));
@@ -537,7 +540,7 @@ describe('GroceryListsComponent', () => {
 
     it('should handle malformed date strings', () => {
       const malformedDate = 'invalid-date';
-      
+
       // This should not throw an error
       expect(() => component.formatDate(malformedDate)).not.toThrow();
     });

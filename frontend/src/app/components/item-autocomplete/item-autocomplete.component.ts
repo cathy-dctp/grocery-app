@@ -1,10 +1,9 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, filter, startWith, catchError } from 'rxjs/operators';
+import { of, BehaviorSubject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
 import { GroceryService } from '../../services/grocery.service';
-import { Item } from '../../models/api.models';
 
 export interface AutocompleteItem {
   id: number;
@@ -18,7 +17,7 @@ export interface AutocompleteItem {
   selector: 'app-item-autocomplete',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './item-autocomplete.component.html'
+  templateUrl: './item-autocomplete.component.html',
 })
 export class ItemAutocompleteComponent {
   @Input() placeholder: string = 'Start typing to search items...';
@@ -38,58 +37,60 @@ export class ItemAutocompleteComponent {
   }
 
   private initializeSearch() {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      filter(query => query.length >= this.minLength || query.length === 0),
-      switchMap(query => {
-        if (query.length === 0) {
-          return of({ results: [] });
-        }
-        
-        this.isLoading.set(true);
-        return this.groceryService.searchItems(query).pipe(
-          catchError(error => {
-            console.error('Search error:', error);
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter((query) => query.length >= this.minLength || query.length === 0),
+        switchMap((query) => {
+          if (query.length === 0) {
             return of({ results: [] });
-          })
-        );
-      })
-    ).subscribe(response => {
-      const items: AutocompleteItem[] = response.results.map(item => ({
-        id: item.id,
-        name: item.name,
-        category_name: item.category_name,
-        default_unit: item.default_unit
-      }));
+          }
 
-      const query = this.searchControl.value || '';
-      
-      // Add "Create new item" option if no exact match found and query is not empty
-      if (query.length >= this.minLength) {
-        const hasExactMatch = items.some(item => 
-          item.name.toLowerCase() === query.toLowerCase()
-        );
-        
-        if (!hasExactMatch) {
-          items.push({
-            id: -1,
-            name: `Create "${query}"`,
-            category_name: 'New Item',
-            default_unit: '',
-            isCreateNew: true
-          });
+          this.isLoading.set(true);
+          return this.groceryService.searchItems(query).pipe(
+            catchError((error) => {
+              console.error('Search error:', error);
+              return of({ results: [] });
+            })
+          );
+        })
+      )
+      .subscribe((response) => {
+        const items: AutocompleteItem[] = response.results.map((item) => ({
+          id: item.id,
+          name: item.name,
+          category_name: item.category_name,
+          default_unit: item.default_unit,
+        }));
+
+        const query = this.searchControl.value || '';
+
+        // Add "Create new item" option if no exact match found and query is not empty
+        if (query.length >= this.minLength) {
+          const hasExactMatch = items.some(
+            (item) => item.name.toLowerCase() === query.toLowerCase()
+          );
+
+          if (!hasExactMatch) {
+            items.push({
+              id: -1,
+              name: `Create "${query}"`,
+              category_name: 'New Item',
+              default_unit: '',
+              isCreateNew: true,
+            });
+          }
         }
-      }
 
-      this.suggestions.set(items);
-      this.isLoading.set(false);
-      this.showDropdown.set(items.length > 0);
-      this.selectedIndex.set(-1);
-    });
+        this.suggestions.set(items);
+        this.isLoading.set(false);
+        this.showDropdown.set(items.length > 0);
+        this.selectedIndex.set(-1);
+      });
 
     // Subscribe to form control changes
-    this.searchControl.valueChanges.subscribe(value => {
+    this.searchControl.valueChanges.subscribe((value) => {
       this.searchSubject.next(value || '');
     });
   }

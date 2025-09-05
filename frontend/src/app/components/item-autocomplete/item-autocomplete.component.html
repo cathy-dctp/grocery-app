@@ -12,11 +12,11 @@
       role="combobox"
       [attr.aria-expanded]="showDropdown()"
       aria-haspopup="listbox"
-    >
-    
+    />
+
     @if (searchControl.value) {
-      <button 
-        type="button" 
+      <button
+        type="button"
         class="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full transition-all duration-200"
         (click)="clearInput()"
         aria-label="Clear search"
@@ -24,24 +24,32 @@
         ×
       </button>
     }
-    
+
     @if (isLoading()) {
       <div class="absolute right-4 top-1/2 transform -translate-y-1/2" aria-label="Loading">
-        <div class="w-4 h-4 border-2 border-neutral-200 border-t-primary-500 rounded-full animate-spin"></div>
+        <div
+          class="w-4 h-4 border-2 border-neutral-200 border-t-primary-500 rounded-full animate-spin"
+        ></div>
       </div>
     }
   </div>
 
   @if (showDropdown()) {
-    <div class="absolute top-full left-0 right-0 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 mt-1" role="listbox">
+    <div
+      class="absolute top-full left-0 right-0 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 mt-1"
+      role="listbox"
+    >
       @for (item of suggestions(); track $index) {
-        <div 
+        <div
           class="px-4 py-3 cursor-pointer border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors duration-150"
           [class.bg-neutral-50]="selectedIndex() === $index"
           [class.bg-green-50]="item.isCreateNew"
           [class.hover:bg-green-100]="item.isCreateNew"
           (click)="selectItem(item)"
+          (keydown.enter)="selectItem(item)"
+          (keydown.space)="selectItem(item)"
           role="option"
+          tabindex="0"
           [attr.aria-selected]="selectedIndex() === $index"
         >
           @if (item.isCreateNew) {
@@ -56,7 +64,9 @@
             <div class="flex flex-col gap-1">
               <div class="font-medium text-neutral-900 text-sm">{{ item.name }}</div>
               <div class="flex items-center gap-2 text-xs text-neutral-500">
-                <span class="bg-neutral-200 px-2 py-1 rounded text-xs">{{ item.category_name }}</span>
+                <span class="bg-neutral-200 px-2 py-1 rounded text-xs">{{
+                  item.category_name
+                }}</span>
                 @if (item.default_unit) {
                   <span class="italic">{{ item.default_unit }}</span>
                 }
@@ -65,9 +75,7 @@
           }
         </div>
       } @empty {
-        <div class="px-4 py-4 text-center text-neutral-500 italic">
-          No items found
-        </div>
+        <div class="px-4 py-4 text-center text-neutral-500 italic">No items found</div>
       }
     </div>
   }

@@ -6,7 +6,7 @@ import {
   Item,
   GroceryList,
   GroceryListItem,
-  PaginatedResponse
+  PaginatedResponse,
 } from '../models/api.models';
 
 describe('GroceryService', () => {
@@ -18,7 +18,7 @@ describe('GroceryService', () => {
     id: 1,
     name: 'Fruits',
     created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
+    updated_at: '2025-01-01T00:00:00Z',
   };
 
   const mockItem: Item = {
@@ -28,7 +28,7 @@ describe('GroceryService', () => {
     category_name: 'Fruits',
     default_unit: 'piece',
     created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
+    updated_at: '2025-01-01T00:00:00Z',
   };
 
   const mockGroceryList: GroceryList = {
@@ -39,7 +39,7 @@ describe('GroceryService', () => {
     shared_with: [],
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',
-    item_count: 0
+    item_count: 0,
   };
 
   const mockGroceryListItem: GroceryListItem = {
@@ -57,19 +57,19 @@ describe('GroceryService', () => {
     added_by: 1,
     added_by_username: 'testuser',
     created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
+    updated_at: '2025-01-01T00:00:00Z',
   };
 
   const mockPaginatedResponse = <T>(results: T[]): PaginatedResponse<T> => ({
     count: results.length,
     next: undefined,
     previous: undefined,
-    results
+    results,
   });
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule]
+      imports: [HttpClientTestingModule],
     });
 
     service = TestBed.inject(GroceryService);
@@ -87,10 +87,8 @@ describe('GroceryService', () => {
 
     it('should determine correct API URL for localhost', () => {
       service.getCategories().subscribe();
-      
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/categories/')
-      );
+
+      const req = httpMock.expectOne((req) => req.url.includes('/api/categories/'));
       expect(req.request.url).toBeTruthy();
       req.flush(mockPaginatedResponse([mockCategory]));
     });
@@ -101,14 +99,14 @@ describe('GroceryService', () => {
       const mockCategories = [mockCategory];
       const expectedResponse = mockPaginatedResponse(mockCategories);
 
-      service.getCategories().subscribe(response => {
+      service.getCategories().subscribe((response) => {
         expect(response).toEqual(expectedResponse);
         expect(response.results.length).toBe(1);
         expect(response.results[0].name).toBe('Fruits');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/categories/') && req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/categories/') && req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -118,16 +116,16 @@ describe('GroceryService', () => {
       const expectedCategory: Category = {
         ...mockCategory,
         id: 2,
-        name: categoryName
+        name: categoryName,
       };
 
-      service.createCategory(categoryName).subscribe(category => {
+      service.createCategory(categoryName).subscribe((category) => {
         expect(category).toEqual(expectedCategory);
         expect(category.name).toBe(categoryName);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/categories/') && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/categories/') && req.method === 'POST'
       );
       expect(req.request.body).toEqual({ name: categoryName });
       req.flush(expectedCategory);
@@ -139,14 +137,14 @@ describe('GroceryService', () => {
       const mockItems = [mockItem];
       const expectedResponse = mockPaginatedResponse(mockItems);
 
-      service.getItems().subscribe(response => {
+      service.getItems().subscribe((response) => {
         expect(response).toEqual(expectedResponse);
         expect(response.results[0].name).toBe('Apple');
         expect(response.results[0].category_name).toBe('Fruits');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/items/') && req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/items/') && req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -156,15 +154,16 @@ describe('GroceryService', () => {
       const mockItems = [mockItem];
       const expectedResponse = mockPaginatedResponse(mockItems);
 
-      service.searchItems(searchQuery).subscribe(response => {
+      service.searchItems(searchQuery).subscribe((response) => {
         expect(response).toEqual(expectedResponse);
         expect(response.results.length).toBe(1);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/items/') && 
-        req.url.includes(`search=${encodeURIComponent(searchQuery)}`) &&
-        req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) =>
+          req.url.includes('/api/items/') &&
+          req.url.includes(`search=${encodeURIComponent(searchQuery)}`) &&
+          req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -173,21 +172,21 @@ describe('GroceryService', () => {
       const newItemData: Partial<Item> = {
         name: 'Banana',
         category: 1,
-        default_unit: 'piece'
+        default_unit: 'piece',
       };
       const expectedItem: Item = {
         ...mockItem,
         id: 2,
-        name: 'Banana'
+        name: 'Banana',
       };
 
-      service.createItem(newItemData).subscribe(item => {
+      service.createItem(newItemData).subscribe((item) => {
         expect(item).toEqual(expectedItem);
         expect(item.name).toBe('Banana');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/items/') && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/items/') && req.method === 'POST'
       );
       expect(req.request.body).toEqual(newItemData);
       req.flush(expectedItem);
@@ -197,20 +196,20 @@ describe('GroceryService', () => {
       const itemId = 1;
       const updateData: Partial<Item> = {
         name: 'Green Apple',
-        default_unit: 'kg'
+        default_unit: 'kg',
       };
       const expectedItem: Item = {
         ...mockItem,
         name: 'Green Apple',
-        default_unit: 'kg'
+        default_unit: 'kg',
       };
 
-      service.updateItem(itemId, updateData).subscribe(item => {
+      service.updateItem(itemId, updateData).subscribe((item) => {
         expect(item).toEqual(expectedItem);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/items/${itemId}/`) && req.method === 'PUT'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/items/${itemId}/`) && req.method === 'PUT'
       );
       expect(req.request.body).toEqual(updateData);
       req.flush(expectedItem);
@@ -219,12 +218,12 @@ describe('GroceryService', () => {
     it('should delete item', () => {
       const itemId = 1;
 
-      service.deleteItem(itemId).subscribe(response => {
+      service.deleteItem(itemId).subscribe((response) => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/items/${itemId}/`) && req.method === 'DELETE'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/items/${itemId}/`) && req.method === 'DELETE'
       );
       req.flush(null);
     });
@@ -270,14 +269,14 @@ describe('GroceryService', () => {
       const mockLists = [mockGroceryList];
       const expectedResponse = mockPaginatedResponse(mockLists);
 
-      service.getGroceryLists().subscribe(response => {
+      service.getGroceryLists().subscribe((response) => {
         expect(response).toEqual(expectedResponse);
         expect(response.results[0].name).toBe('Weekly Shopping');
         expect(response.results[0].owner_username).toBe('testuser');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/grocery-lists/') && req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/grocery-lists/') && req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -285,13 +284,13 @@ describe('GroceryService', () => {
     it('should get single grocery list by id', () => {
       const listId = 1;
 
-      service.getGroceryList(listId).subscribe(list => {
+      service.getGroceryList(listId).subscribe((list) => {
         expect(list).toEqual(mockGroceryList);
         expect(list.id).toBe(listId);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'GET'
       );
       req.flush(mockGroceryList);
     });
@@ -301,16 +300,16 @@ describe('GroceryService', () => {
       const expectedList: GroceryList = {
         ...mockGroceryList,
         id: 2,
-        name: listName
+        name: listName,
       };
 
-      service.createGroceryList(listName).subscribe(list => {
+      service.createGroceryList(listName).subscribe((list) => {
         expect(list).toEqual(expectedList);
         expect(list.name).toBe(listName);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/grocery-lists/') && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/grocery-lists/') && req.method === 'POST'
       );
       expect(req.request.body).toEqual({ name: listName });
       req.flush(expectedList);
@@ -319,19 +318,19 @@ describe('GroceryService', () => {
     it('should update grocery list', () => {
       const listId = 1;
       const updateData: Partial<GroceryList> = {
-        name: 'Updated Weekly Shopping'
+        name: 'Updated Weekly Shopping',
       };
       const expectedList: GroceryList = {
         ...mockGroceryList,
-        name: 'Updated Weekly Shopping'
+        name: 'Updated Weekly Shopping',
       };
 
-      service.updateGroceryList(listId, updateData).subscribe(list => {
+      service.updateGroceryList(listId, updateData).subscribe((list) => {
         expect(list).toEqual(expectedList);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'PUT'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'PUT'
       );
       expect(req.request.body).toEqual(updateData);
       req.flush(expectedList);
@@ -340,12 +339,12 @@ describe('GroceryService', () => {
     it('should delete grocery list', () => {
       const listId = 1;
 
-      service.deleteGroceryList(listId).subscribe(response => {
+      service.deleteGroceryList(listId).subscribe((response) => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'DELETE'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-lists/${listId}/`) && req.method === 'DELETE'
       );
       req.flush(null);
     });
@@ -354,12 +353,13 @@ describe('GroceryService', () => {
       const listId = 1;
       const username = 'friend@example.com';
 
-      service.shareList(listId, username).subscribe(response => {
+      service.shareList(listId, username).subscribe((response) => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/share_with/`) && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) =>
+          req.url.includes(`/api/grocery-lists/${listId}/share_with/`) && req.method === 'POST'
       );
       expect(req.request.body).toEqual({ username });
       req.flush(null);
@@ -373,16 +373,17 @@ describe('GroceryService', () => {
       const mockItems = [mockGroceryListItem];
       const expectedResponse = mockPaginatedResponse(mockItems);
 
-      service.getGroceryListItems(listId).subscribe(response => {
+      service.getGroceryListItems(listId).subscribe((response) => {
         expect(response).toEqual(expectedResponse);
         expect(response.results[0].custom_name).toBe('Organic Apples'); // NEW: Custom naming
         expect(response.results[0].display_name).toBe('Organic Apples'); // NEW: Display name
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/grocery-list-items/') && 
-        req.url.includes(`grocery_list=${listId}`) &&
-        req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) =>
+          req.url.includes('/api/grocery-list-items/') &&
+          req.url.includes(`grocery_list=${listId}`) &&
+          req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -391,14 +392,15 @@ describe('GroceryService', () => {
       const mockItems = [mockGroceryListItem];
       const expectedResponse = mockPaginatedResponse(mockItems);
 
-      service.getGroceryListItems().subscribe(response => {
+      service.getGroceryListItems().subscribe((response) => {
         expect(response).toEqual(expectedResponse);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/grocery-list-items/') && 
-        !req.url.includes('grocery_list=') &&
-        req.method === 'GET'
+      const req = httpMock.expectOne(
+        (req) =>
+          req.url.includes('/api/grocery-list-items/') &&
+          !req.url.includes('grocery_list=') &&
+          req.method === 'GET'
       );
       req.flush(expectedResponse);
     });
@@ -416,10 +418,10 @@ describe('GroceryService', () => {
         quantity: '3',
         unit: 'lbs',
         custom_name: '', // No custom name initially
-        display_name: 'Apple' // Falls back to item name
+        display_name: 'Apple', // Falls back to item name
       };
 
-      service.addItemToList(listId, itemId, quantity, unit).subscribe(listItem => {
+      service.addItemToList(listId, itemId, quantity, unit).subscribe((listItem) => {
         expect(listItem).toEqual(expectedListItem);
         expect(listItem.quantity).toBe('3');
         expect(listItem.unit).toBe('lbs');
@@ -427,13 +429,13 @@ describe('GroceryService', () => {
         expect(listItem.id).toBe(2);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/add_item/`) && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-lists/${listId}/add_item/`) && req.method === 'POST'
       );
       expect(req.request.body).toEqual({
         item_id: itemId,
         quantity,
-        unit
+        unit,
       });
       req.flush(expectedListItem);
     });
@@ -443,19 +445,19 @@ describe('GroceryService', () => {
       const itemId = 1;
       const quantity = '5';
 
-      service.addItemToList(listId, itemId, quantity).subscribe(listItem => {
+      service.addItemToList(listId, itemId, quantity).subscribe((listItem) => {
         expect(listItem.quantity).toBe('5');
         // Should use item's default unit
         expect(listItem.unit).toBeTruthy();
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/add_item/`) && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-lists/${listId}/add_item/`) && req.method === 'POST'
       );
       expect(req.request.body).toEqual({
         item_id: itemId,
         quantity,
-        unit: undefined
+        unit: undefined,
       });
       req.flush(mockGroceryListItem);
     });
@@ -465,25 +467,25 @@ describe('GroceryService', () => {
       const updateData: Partial<GroceryListItem> = {
         custom_name: 'Premium Organic Apples',
         quantity: '3',
-        notes: 'Get the expensive ones'
+        notes: 'Get the expensive ones',
       };
-      
+
       const expectedItem: GroceryListItem = {
         ...mockGroceryListItem,
         custom_name: 'Premium Organic Apples',
         display_name: 'Premium Organic Apples', // Should update based on custom_name
         quantity: '3',
-        notes: 'Get the expensive ones'
+        notes: 'Get the expensive ones',
       };
 
-      service.updateGroceryListItem(itemId, updateData).subscribe(item => {
+      service.updateGroceryListItem(itemId, updateData).subscribe((item) => {
         expect(item).toEqual(expectedItem);
         expect(item.custom_name).toBe('Premium Organic Apples');
         expect(item.display_name).toBe('Premium Organic Apples');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
       );
       expect(req.request.body).toEqual(updateData);
       req.flush(expectedItem);
@@ -492,35 +494,39 @@ describe('GroceryService', () => {
     it('should update grocery list item custom name only', () => {
       const itemId = 1;
       const updateData = { custom_name: 'Special Apples' };
-      
-      service.updateGroceryListItem(itemId, updateData).subscribe(item => {
+
+      service.updateGroceryListItem(itemId, updateData).subscribe((item) => {
         expect(item.custom_name).toBe('Special Apples');
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
       );
       expect(req.request.body).toEqual(updateData);
-      req.flush({ ...mockGroceryListItem, custom_name: 'Special Apples', display_name: 'Special Apples' });
+      req.flush({
+        ...mockGroceryListItem,
+        custom_name: 'Special Apples',
+        display_name: 'Special Apples',
+      });
     });
 
     it('should clear custom name with PATCH', () => {
       const itemId = 1;
       const updateData = { custom_name: '' };
-      
+
       const expectedItem: GroceryListItem = {
         ...mockGroceryListItem,
         custom_name: '',
-        display_name: 'Apple' // Should fall back to item name
+        display_name: 'Apple', // Should fall back to item name
       };
 
-      service.updateGroceryListItem(itemId, updateData).subscribe(item => {
+      service.updateGroceryListItem(itemId, updateData).subscribe((item) => {
         expect(item.custom_name).toBe('');
         expect(item.display_name).toBe('Apple'); // Falls back to item name
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'PATCH'
       );
       req.flush(expectedItem);
     });
@@ -528,12 +534,12 @@ describe('GroceryService', () => {
     it('should delete grocery list item', () => {
       const itemId = 1;
 
-      service.deleteGroceryListItem(itemId).subscribe(response => {
+      service.deleteGroceryListItem(itemId).subscribe((response) => {
         expect(response).toBeNull();
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'DELETE'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes(`/api/grocery-list-items/${itemId}/`) && req.method === 'DELETE'
       );
       req.flush(null);
     });
@@ -545,17 +551,19 @@ describe('GroceryService', () => {
         is_checked: true,
         checked_by: 1,
         checked_by_username: 'testuser',
-        checked_at: '2025-01-01T12:00:00Z'
+        checked_at: '2025-01-01T12:00:00Z',
       };
 
-      service.toggleItemChecked(itemId).subscribe(item => {
+      service.toggleItemChecked(itemId).subscribe((item) => {
         expect(item).toEqual(expectedItem);
         expect(item.is_checked).toBe(true);
         expect(item.checked_by).toBe(1);
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-list-items/${itemId}/toggle_checked/`) && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) =>
+          req.url.includes(`/api/grocery-list-items/${itemId}/toggle_checked/`) &&
+          req.method === 'POST'
       );
       expect(req.request.body).toEqual({});
       req.flush(expectedItem);
@@ -570,12 +578,10 @@ describe('GroceryService', () => {
         next: () => fail('Should have failed with 404'),
         error: (error) => {
           expect(error.status).toBe(404);
-        }
+        },
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes(`/api/grocery-lists/${listId}/`)
-      );
+      const req = httpMock.expectOne((req) => req.url.includes(`/api/grocery-lists/${listId}/`));
       req.flush({ detail: 'Not found' }, { status: 404, statusText: 'Not Found' });
     });
 
@@ -587,16 +593,19 @@ describe('GroceryService', () => {
         error: (error) => {
           expect(error.status).toBe(400);
           expect(error.error).toBeTruthy();
-        }
+        },
       });
 
-      const req = httpMock.expectOne(req => 
-        req.url.includes('/api/items/') && req.method === 'POST'
+      const req = httpMock.expectOne(
+        (req) => req.url.includes('/api/items/') && req.method === 'POST'
       );
-      req.flush({ 
-        name: ['This field is required.'],
-        category: ['This field may not be null.']
-      }, { status: 400, statusText: 'Bad Request' });
+      req.flush(
+        {
+          name: ['This field is required.'],
+          category: ['This field may not be null.'],
+        },
+        { status: 400, statusText: 'Bad Request' }
+      );
     });
 
     it('should handle network errors gracefully', () => {
@@ -604,10 +613,10 @@ describe('GroceryService', () => {
         next: () => fail('Should have failed with network error'),
         error: (error) => {
           expect(error).toBeTruthy();
-        }
+        },
       });
 
-      const req = httpMock.expectOne(req => req.url.includes('/api/categories/'));
+      const req = httpMock.expectOne((req) => req.url.includes('/api/categories/'));
       req.error(new ErrorEvent('Network error'));
     });
   });

@@ -7,12 +7,16 @@ import { GroceryListItem } from '../../models/api.models';
   selector: 'app-grocery-list-item',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './grocery-list-item.component.html'
+  templateUrl: './grocery-list-item.component.html',
 })
 export class GroceryListItemComponent {
   @Input({ required: true }) item!: GroceryListItem;
   @Output() toggleChecked = new EventEmitter<GroceryListItem>();
-  @Output() updateItem = new EventEmitter<{ id: number; updates: Partial<GroceryListItem>; callback: (success: boolean) => void }>();
+  @Output() updateItem = new EventEmitter<{
+    id: number;
+    updates: Partial<GroceryListItem>;
+    callback: (success: boolean) => void;
+  }>();
   @Output() deleteItem = new EventEmitter<number>();
 
   isEditing = signal(false);
@@ -61,10 +65,12 @@ export class GroceryListItemComponent {
     }
 
     // Check if any field has changed
-    if (customName === (this.item.custom_name || '') &&
-        quantity === this.item.quantity &&
-        unit === this.item.unit &&
-        notes === (this.item.notes || '')) {
+    if (
+      customName === (this.item.custom_name || '') &&
+      quantity === this.item.quantity &&
+      unit === this.item.unit &&
+      notes === (this.item.notes || '')
+    ) {
       this.isEditing.set(false);
       return;
     }
@@ -72,18 +78,18 @@ export class GroceryListItemComponent {
     this.isSaving.set(true);
     this.updateItem.emit({
       id: this.item.id,
-      updates: { 
+      updates: {
         custom_name: customName || undefined, // Send undefined if empty to clear the field
-        quantity, 
+        quantity,
         unit,
-        notes: notes || ''
+        notes: notes || '',
       },
       callback: (success: boolean) => {
         this.isSaving.set(false);
         if (success) {
           this.isEditing.set(false);
         }
-      }
+      },
     });
   }
 

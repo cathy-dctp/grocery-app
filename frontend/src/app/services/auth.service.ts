@@ -4,13 +4,13 @@ import { Observable, BehaviorSubject, tap, catchError, of, map } from 'rxjs';
 import { AuthUser, LoginRequest, LoginResponse } from '../models/api.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = this.getApiUrl();
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  
+
   public isAuthenticated = signal<boolean>(false);
 
   constructor(private http: HttpClient) {
@@ -27,7 +27,7 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const userStr = localStorage.getItem('currentUser');
     const token = localStorage.getItem('authToken');
-    
+
     if (userStr && token) {
       try {
         const user: AuthUser = JSON.parse(userStr);
@@ -44,30 +44,30 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login/`, credentials).pipe(
-      tap(response => {
+      tap((response) => {
         localStorage.setItem('currentUser', JSON.stringify(response.user));
         localStorage.setItem('authToken', response.token);
         const userWithToken = { ...response.user, token: response.token };
         this.currentUserSubject.next(userWithToken);
         this.isAuthenticated.set(true);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Login error:', error);
         throw error;
       })
     );
   }
 
-  logout(): Observable<any> {
+  logout(): Observable<null> {
     const token = this.getAuthToken();
     if (!token) {
       this.clearUserData();
       return of(null);
     }
 
-    return this.http.post(`${this.apiUrl}/auth/logout/`, {}).pipe(
+    return this.http.post<null>(`${this.apiUrl}/auth/logout/`, {}).pipe(
       tap(() => this.clearUserData()),
-      catchError(error => {
+      catchError((_error) => {
         // Even if logout fails on server, clear local data
         this.clearUserData();
         return of(null);
