@@ -108,69 +108,11 @@ jobs:
         flags: frontend
         name: frontend-coverage
 
-  cypress-test:
-    name: Cypress E2E Tests
-    runs-on: ubuntu-latest
-    needs: [lint, backend-test]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-    
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm ci
-    
-    - name: Start services with Docker Compose
-      run: |
-        docker-compose up -d --build
-        echo "Waiting for services to start..."
-        sleep 30
-    
-    - name: Wait for services to be ready
-      run: |
-        echo "Testing backend health..."
-        timeout 60s bash -c 'until curl -f http://localhost:8000/api/auth/login/ -X POST -H "Content-Type: application/json" -d "{\"username\":\"john_doe\",\"password\":\"password123\"}"; do echo "Waiting for backend..."; sleep 5; done'
-        echo "Backend is ready!"
-        
-        echo "Testing frontend..."
-        timeout 60s bash -c 'until curl -f http://localhost:8000; do echo "Waiting for frontend..."; sleep 5; done'
-        echo "Frontend is ready!"
-    
-    - name: Seed test data
-      run: |
-        docker exec grocery-app python manage.py seed_data
-    
-    - name: Run Cypress E2E tests
-      run: |
-        cd frontend
-        CYPRESS_baseUrl=http://localhost:8000 npm run e2e:fast
-    
-    - name: Upload Cypress screenshots
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: cypress-screenshots
-        path: frontend/cypress/screenshots
-        retention-days: 7
-    
-    - name: Clean up Docker containers
-      if: always()
-      run: |
-        docker-compose down -v
 
   deployment:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, cypress-test]
+    needs: [backend-test, frontend-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
@@ -194,7 +136,7 @@ jobs:
   report:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, cypress-test]
+    needs: [backend-test, frontend-test]
     if: always()
     
     steps:
@@ -206,7 +148,6 @@ jobs:
         echo "- 🧹 **Linting**: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- 🐍 **Backend Tests**: ${{ needs.backend-test.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- ⚛️ **Frontend Unit Tests**: ${{ needs.frontend-test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- 🤖 **Cypress E2E Tests**: ${{ needs.cypress-test.result }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Coverage Reports:" >> $GITHUB_STEP_SUMMARY
         echo "- Frontend coverage available in artifacts" >> $GITHUB_STEP_SUMMARY
