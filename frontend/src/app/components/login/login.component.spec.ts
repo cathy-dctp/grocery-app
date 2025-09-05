@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +10,7 @@ describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const mockUser: AuthUser = {
     id: 1,
@@ -26,15 +27,16 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['login']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent],
+      imports: [LoginComponent, RouterTestingModule],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
@@ -155,14 +157,14 @@ describe('LoginComponent', () => {
         password: 'password123',
       });
       expect(console.log).toHaveBeenCalledWith('Login successful:', 'testuser');
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
+      expect(router.navigate).toHaveBeenCalledWith(['/lists']);
     });
 
     it('should set loading state during login process', () => {
       component.onSubmit();
 
       expect(mockAuthService.login).toHaveBeenCalled();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
+      expect(router.navigate).toHaveBeenCalledWith(['/lists']);
     });
 
     it('should clear any previous errors on successful login', () => {
@@ -190,7 +192,7 @@ describe('LoginComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Invalid username or password');
       expect(console.error).toHaveBeenCalledWith('Login failed:', error);
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('should handle 500 server error', () => {
@@ -203,7 +205,7 @@ describe('LoginComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Login failed. Please try again.');
       expect(console.error).toHaveBeenCalledWith('Login failed:', error);
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('should handle network error', () => {
@@ -251,7 +253,7 @@ describe('LoginComponent', () => {
           username: 'john_doe',
           password: 'password123',
         });
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
+        expect(router.navigate).toHaveBeenCalledWith(['/lists']);
       });
     });
 
@@ -277,7 +279,7 @@ describe('LoginComponent', () => {
           username: 'jane_smith',
           password: 'password123',
         });
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/lists']);
+        expect(router.navigate).toHaveBeenCalledWith(['/lists']);
       });
     });
   });
@@ -393,7 +395,7 @@ describe('LoginComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Login failed. Please try again.');
       expect(console.error).toHaveBeenCalled();
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('should maintain form state after successful login', () => {
