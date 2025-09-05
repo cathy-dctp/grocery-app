@@ -131,9 +131,12 @@ export class GroceryListsComponent implements OnInit {
     if (this.selectedListForShare) {
       this.groceryService.getGroceryList(this.selectedListForShare.id).subscribe({
         next: (updatedList) => {
+          // Update the lists signal
           this.lists.update((lists) =>
             lists.map((list) => (list.id === updatedList.id ? updatedList : list))
           );
+          // Update the selected list reference so modal shows updated data
+          this.selectedListForShare = updatedList;
         },
         error: (err) => {
           console.error('Error refreshing list after sharing:', err);
@@ -147,9 +150,12 @@ export class GroceryListsComponent implements OnInit {
     if (this.selectedListForShare) {
       this.groceryService.getGroceryList(this.selectedListForShare.id).subscribe({
         next: (updatedList) => {
+          // Update the lists signal
           this.lists.update((lists) =>
             lists.map((list) => (list.id === updatedList.id ? updatedList : list))
           );
+          // Update the selected list reference so modal shows updated data
+          this.selectedListForShare = updatedList;
         },
         error: (err) => {
           console.error('Error refreshing list after removing user:', err);

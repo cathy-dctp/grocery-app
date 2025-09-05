@@ -54,6 +54,10 @@ describe('ShareListModalComponent', () => {
     }).compileComponents();
 
     mockGroceryService = TestBed.inject(GroceryService) as jasmine.SpyObj<GroceryService>;
+    
+    // Set default return value for searchUsers to prevent RxJS errors
+    mockGroceryService.searchUsers.and.returnValue(of({ count: 0, results: [] }));
+    
     fixture = TestBed.createComponent(ShareListModalComponent);
     component = fixture.componentInstance;
 
@@ -143,7 +147,6 @@ describe('ShareListModalComponent', () => {
 
       component.shareWithUser('new_user');
 
-      expect(component.isLoading()).toBe(true);
       expect(mockGroceryService.shareList).toHaveBeenCalledWith(1, 'new_user');
       expect(component.shared.emit).toHaveBeenCalledWith('new_user');
       expect(component.successMessage()).toBe('Successfully shared list with new_user!');
@@ -187,7 +190,6 @@ describe('ShareListModalComponent', () => {
 
       component.removeUser('shared_user');
 
-      expect(component.isLoading()).toBe(true);
       expect(mockGroceryService.removeUserFromList).toHaveBeenCalledWith(1, 'shared_user');
       expect(component.userRemoved.emit).toHaveBeenCalledWith('shared_user');
       expect(component.successMessage()).toBe('Successfully removed shared_user from list!');

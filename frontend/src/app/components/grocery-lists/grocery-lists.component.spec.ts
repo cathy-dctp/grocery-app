@@ -609,6 +609,7 @@ describe('GroceryListsComponent', () => {
 
         expect(mockGroceryService.getGroceryList).toHaveBeenCalledWith(mockGroceryList.id);
         expect(component.lists()[0]).toEqual(updatedList);
+        expect(component.selectedListForShare).toEqual(updatedList);
       });
 
       it('should handle error when refreshing list after sharing', () => {
@@ -646,6 +647,7 @@ describe('GroceryListsComponent', () => {
 
         expect(mockGroceryService.getGroceryList).toHaveBeenCalledWith(mockGroceryList.id);
         expect(component.lists()[0]).toEqual(updatedList);
+        expect(component.selectedListForShare).toEqual(updatedList);
       });
 
       it('should handle error when refreshing list after removing user', () => {
