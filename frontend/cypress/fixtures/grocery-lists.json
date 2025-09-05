@@ -1,0 +1,43 @@
+{
+  "sampleLists": [
+    {
+      "id": 1,
+      "name": "Weekly Shopping",
+      "items": [
+        {
+          "id": 1,
+          "name": "Apples",
+          "quantity": "2",
+          "unit": "lb",
+          "category": "Produce",
+          "checked": false
+        },
+        {
+          "id": 2,
+          "name": "Milk",
+          "quantity": "1",
+          "unit": "gallon",
+          "category": "Dairy",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Party Supplies",
+      "items": [
+        {
+          "id": 3,
+          "name": "Pizza",
+          "quantity": "3",
+          "unit": "boxes",
+          "category": "Frozen",
+          "checked": true
+        }
+      ]
+    }
+  ],
+  "newList": {
+    "name": "Test Shopping List"
+  }
+}

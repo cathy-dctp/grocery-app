@@ -1,0 +1,57 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Produce"
+    },
+    {
+      "id": 2,
+      "name": "Dairy"
+    },
+    {
+      "id": 3,
+      "name": "Meat"
+    },
+    {
+      "id": 4,
+      "name": "Beverages"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "name": "Apples",
+      "category": "Produce",
+      "default_unit": "lb"
+    },
+    {
+      "id": 2,
+      "name": "Bananas",
+      "category": "Produce",
+      "default_unit": "bunch"
+    },
+    {
+      "id": 3,
+      "name": "Milk",
+      "category": "Dairy",
+      "default_unit": "gallon"
+    },
+    {
+      "id": 4,
+      "name": "Chicken Breast",
+      "category": "Meat",
+      "default_unit": "lb"
+    },
+    {
+      "id": 5,
+      "name": "Orange Juice",
+      "category": "Beverages",
+      "default_unit": "bottle"
+    }
+  ],
+  "newItem": {
+    "name": "Test Item",
+    "category": "Test Category",
+    "unit": "pcs"
+  }
+}

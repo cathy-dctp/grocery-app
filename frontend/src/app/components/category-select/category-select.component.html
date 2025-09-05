@@ -1,6 +1,7 @@
 <div class="space-y-4">
   <div>
     <select
+      data-cy="category-select"
       [value]="selectedCategoryId"
       (change)="onCategoryChange($any($event.target).value)"
       class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors duration-200 font-sans bg-white"
@@ -23,6 +24,7 @@
           </label>
           <input
             type="text"
+            data-cy="custom-category-input"
             [(ngModel)]="customCategoryName"
             placeholder="Enter category name"
             class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors duration-200 font-sans"
@@ -31,6 +33,7 @@
         <div class="flex space-x-3">
           <button
             type="button"
+            data-cy="create-category-button"
             (click)="onCreateCategory()"
             [disabled]="!customCategoryName().trim()"
             class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-success-500 hover:bg-success-600 disabled:bg-success-300 text-white font-medium rounded-lg transition-colors duration-200 font-heading"
@@ -47,6 +50,7 @@
           </button>
           <button
             type="button"
+            data-cy="cancel-category-button"
             (click)="resetCustomInput(); onCategoryChange('0')"
             class="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-medium rounded-lg transition-colors duration-200 font-heading"
           >
