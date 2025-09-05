@@ -32,7 +32,6 @@ class ItemViewSet(viewsets.ModelViewSet):
     search_fields = ["name", "barcode"]
 
 
-# TODO:  Understand custom actions
 class GroceryListViewSet(viewsets.ModelViewSet):
     serializer_class = GroceryListSimpleSerializer
     permission_classes = [IsAuthenticated]
