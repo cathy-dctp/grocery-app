@@ -35,9 +35,15 @@ export class LoginComponent {
       password: this.password.trim() 
     }).subscribe({
       next: (response) => {
-        console.log('Login successful:', response.user.username);
-        this.loading.set(false);
-        this.router.navigate(['/lists']);
+        try {
+          console.log('Login successful:', response.user.username);
+          this.loading.set(false);
+          this.router.navigate(['/lists']);
+        } catch (error) {
+          console.error('Login failed:', error);
+          this.loading.set(false);
+          this.error.set('Login failed. Please try again.');
+        }
       },
       error: (err) => {
         console.error('Login failed:', err);
