@@ -79,6 +79,7 @@ npm start
 # Terminal 1: Backend (run these in order)
 cd /Users/cathyp/projects/grocery-app
 docker-compose up db -d
+python manage.py migrate # Apply migrations if any
 cd backend
 source venv/bin/activate  # Look for (venv) in prompt!
 python manage.py runserver 0.0.0.0:8000

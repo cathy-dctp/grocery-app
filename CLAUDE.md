@@ -78,6 +78,12 @@ docker exec grocery-app python manage.py migrate
 # Create superuser
 docker exec grocery-app python manage.py createsuperuser
 
+# Run migrations (if new migrations are added)
+docker exec grocery-app python manage.py migrate
+
+# Check migration status
+docker exec grocery-app python manage.py showmigrations
+
 # Access Django shell
 docker exec -it grocery-app python manage.py shell
 
@@ -228,16 +234,13 @@ grocery-app/
 - ✅ **Environment-aware API URLs** (localhost vs production)
 - ✅ **Same setup** eliminates dev/prod differences
 
-### **Bug Fixes**
+### **Recent Bug Fixes & Improvements** 🔧
 - **Query Filtering**: Fixed grocery-list-items endpoint filtering by list ID
 - **Decimal Handling**: Fixed quantity arithmetic (Decimal vs float type error)
 - **Shared Users**: Added nested user serialization for shared_with (BE) + Displays shared list users (FE)
 - **Item Count Display**: Fixed item_count vs items_count field mapping
-- **Add Item Logic**: Fixed duplicate item handling (update vs create)
+- **Duplicate Item Handling**: **MAJOR CHANGE** - Removed unique constraint to allow multiple entries of same item
+- **Item Editing**: Added inline editing functionality with reusable component architecture
 
-### 🔧 **Commands**
-```bash
-# Local development
-docker-compose up --build
-```
+
 Last Updated: September 2025
